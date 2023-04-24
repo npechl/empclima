@@ -11,9 +11,20 @@ library(stringr)
 
 library(kgc)
 
-sample_metadata     <- "emp-soil-analysis-clean-sub5k/sample-metadata.tsv"
+sample_metadata     <- "data/sample-metadata/emp_qiime_mapping_subset_10k.tsv"
 koeppen_geiger_info <- "climate-classification-info.csv"
+workdir             <- "emp-soil-analysis-clean-sub10k"
 
+if(dir.exists(workdir)) {
+    
+    unlink(workdir, recursive = TRUE)
+    dir.create(workdir, showWarnings = FALSE)
+    
+} else {
+    
+    dir.create(workdir, showWarnings = FALSE)
+    
+}
 
 
 climate_info <- fread(koeppen_geiger_info)
@@ -57,6 +68,6 @@ sam <- merge(
 )
 
 fwrite(
-    sam, sample_metadata,
+    sam, paste0(workdir, "/", basename(sample_metadata)),
     row.names = FALSE, quote = FALSE, sep = "\t"
 )

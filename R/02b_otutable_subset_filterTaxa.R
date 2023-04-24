@@ -9,8 +9,8 @@ library(rbiom)
 library(data.table)
 library(stringr)
 
-biom_name        <- "data/biom/emp_deblur_90bp.subset_5k.biom"
-sample_metadata  <- "emp-soil-analysis-clean-sub5k/sample-metadata.tsv"
+biom_name        <- "data/biom/emp_deblur_90bp.subset_10k.biom"
+sample_metadata  <- "emp-soil-analysis-clean-sub10k/emp_qiime_mapping_subset_10k.tsv"
 empo3_ontology   <- "Soil (non-saline)"
 abundance_thres  <- 1e-04
 prevalence_thres <- 0.10
@@ -92,6 +92,10 @@ abundance_table$TaxaIDabv = taxonomy_table[index, ]$TaxaIDabv
 # index = index[-1]
 
 # colnames(abundance_table) = c("TaxaIDabv", sample.subset[index, ]$SampleIDabv)
+
+
+taxonomy_table <- taxonomy_table[which(Kingdom == "k__Bacteria"), ]
+abundance_table <- abundance_table[which(TaxaIDabv %in% taxonomy_table$TaxaIDabv), ]
 
 
 fwrite(

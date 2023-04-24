@@ -7,10 +7,16 @@ gc()
 library(data.table)
 library(stringr)
 
+# library(ggplot2)
+# library(ggsci)
+# library(ggrepel)
+# library(ggtext)
+# library(extrafont)
+
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k/abundance-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-sub10k/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-sub10k/abundance-table.Soil (non-saline).txt"
 workdir         <- dirname(sample_map)
 
 
@@ -34,8 +40,8 @@ for(i in unique(s0$ClimateZone)) {
     stats[[i]] = data.table(
         "ClimateZone" = i,
         "Group"       = unique(s1$Group),
-        "nSamples"    = nrow(s1),
-        "nTaxa"       = length(index)
+        "No of Samples"    = nrow(s1),
+        "No of ESVs"       = length(index)
     )
     
     
@@ -43,60 +49,92 @@ for(i in unique(s0$ClimateZone)) {
 
 stats = rbindlist(stats)
 
-
 rm(tmp, index, i, s1)
 
+stats$Ratio = stats$`No of ESVs` / stats$`No of Samples`
+
+stats = stats[order(Ratio), ]
+
+fwrite(
+    stats, paste0(workdir, "/ESVdistribution.csv"),
+    row.names = FALSE, quote = TRUE, sep = ","
+)
 
 
-library(ggplot2)
-library(ggsci)
-library(ggrepel)
-library(ggtext)
-library(extrafont)
+# ggplot(data = stats, aes(x = `No of Samples`, y = Ratio)) + 
+#     geom_point(aes(size = `No of ESVs`)) +
+#     geom_label_repel(aes(label = ClimateZone))
+#
+# stats$lbl = paste0(
+#     stats$ClimateZone, "\n",
+#     "No. of samples: ", stats$nSamples, "\n",
+#     "No. of taxa: ", stats$nTaxa
+# )
 
-stats$ratio = stats$nTaxa / stats$nSamples
+# gr = ggplot(data = stats, aes(x = nSamples, y = nTaxa)) +
+#     
+#     geom_point(aes(fill = Group), size = 4, shape = 21, stroke = .25, color = "grey10") +
+# 
+#     
+#     # geom_richtext(
+#     #     aes(label = lbl), size = 3.5,
+#     #     
+#     #     label.size = NA,
+#     #     fill = alpha("white", alpha = .5),
+#     #     hjust = 0
+#     # ) +
+#         
+#     geom_label_repel(
+#         aes(label = lbl),
+#         segment.linetype = "dotted",
+#         
+#         min.segment.length = 0,
+#         
+#         hjust = 0,
+# 
+#         label.size = NA,
+#         fill = alpha("white", alpha = .5),
+# 
+#         family = "Calibri",
+# 
+#         size = 3.5
+#     ) +
+#     
+#     scale_x_continuous(limits = c(0, 65)) +
+#     scale_y_continuous(labels = scales::comma) +
+#     scale_fill_npg() +
+#     scale_size_continuous(guide = "none", range = c(2, 6)) +
+#     
+#     theme_minimal(base_family = "Calibri") +
+#     
+#     theme(
+#         legend.position = "bottom",
+#         legend.title = element_blank(),
+#         
+#         panel.grid = element_line(linewidth = .3, linetype = "dashed"),
+#         axis.ticks = element_line(linewidth = .3),
+#         
+#         panel.border = element_rect(linewidth = .3, fill = NA),
+#         
+#         plot.margin = margin(10, 10, 10, 10)
+#     ) + 
+#     
+#     labs(y = "No. of Taxa", x = "No. of Samples")
+#     
+# ggsave(
+#     plot = gr,
+#     filename = paste0(workdir, "/nTaxa.pdf"),
+#     width = 8, height = 8, units = "in",
+#     device = cairo_pdf
+# )
+# 
+# 
+# ggsave(
+#     plot = gr,
+#     filename = paste0(workdir, "/nTaxa.svg"),
+#     width = 8, height = 8, units = "in"
+# )
 
-
-gr = ggplot(data = stats, aes(x = nSamples, y = nTaxa)) +
-    
-    geom_point(aes(fill = Group), size = 4, shape = 21, stroke = .25, color = "grey10") +
-    
-    geom_label_repel(
-        aes(label = ClimateZone),
-        segment.linetype = "dotted",
-        
-        point.padding = .1,
-        
-        label.size = NA,
-        fill = alpha("white", alpha = .5),
-        
-        family = "Calibri",
-        fontface = "bold",
-        
-        size = 3.5
-    ) +
-    
-    scale_y_continuous(labels = scales::comma) +
-    scale_fill_npg() +
-    scale_size_continuous(guide = "none", range = c(2, 6)) +
-    
-    theme_minimal(base_family = "Calibri") +
-    
-    theme(
-        legend.position = "bottom",
-        legend.title = element_blank(),
-        
-        panel.grid = element_line(linewidth = .3, linetype = "dashed"),
-        axis.ticks = element_line(linewidth = .3),
-        
-        panel.border = element_rect(linewidth = .3, fill = NA),
-        
-        plot.margin = margin(10, 10, 10, 10)
-    ) + 
-    
-    labs(y = "No. of Taxa", x = "No. of Samples")
-    
-    
 
 
 # stats = stats[order(nTaxa), ]
@@ -153,19 +191,6 @@ gr = ggplot(data = stats, aes(x = nSamples, y = nTaxa)) +
 
 
 
-ggsave(
-    plot = gr,
-    filename = paste0(workdir, "/nTaxa.pdf"),
-    width = 8, height = 8, units = "in",
-    device = cairo_pdf
-)
-
-
-ggsave(
-    plot = gr,
-    filename = paste0(workdir, "/nTaxa.svg"),
-    width = 8, height = 8, units = "in"
-)
 
 
 # message(
@@ -174,7 +199,5 @@ ggsave(
 #     ) 
 # )
 
-
-message(c("Min. No. of Taxa: ", min(stats$nTaxa)))
 
 

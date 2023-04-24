@@ -1,0 +1,281 @@
+
+
+rm(list = ls())
+gc()
+
+library(data.table)
+library(stringr)
+
+library(ggplot2)
+library(ggforce)
+library(extrafont)
+library(ggh4x)
+library(ggpubr)
+
+library(paletteer)
+
+# Fig. 2 A =============================================
+
+s0 = fread("emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt")
+x  = fread("emp-soil-analysis-clean-sub5k/diversity1.csv")
+
+x = x[which(x$p.adj <= 0.05), ]
+
+x$group1 = factor(x$group1, levels = sort(unique(s0$ClimateZone)))
+x$group2 = factor(x$group2, levels = sort(unique(s0$ClimateZone)))
+
+x$xmin = as.numeric(x$group1)
+x$xmax = as.numeric(x$group2)
+
+x$g1 = str_sub(x$group1, 1, 1)
+x$g2 = str_sub(x$group2, 1, 1)
+
+x = x[order(g1, g2), ]
+
+x$y.position = numeric()
+
+for(i in seq_len(nrow(x))) {
+
+    x[i, ]$y.position = 5.6 + (i * 0.4)
+
+}
+
+s0$`Level of Heat` = str_replace_all(s0$`Level of Heat`, "summer", "sum")
+
+gr1 = ggplot(data = s0,
+            aes(
+                x = ClimateZone,
+                y = shannon
+            )) +
+
+
+    stat_boxplot(geom = 'errorbar', width = 0.25, color = "black", linewidth = .5) +
+
+    geom_boxplot(aes(fill = Group.x), color = "black",
+                 outlier.shape = NA, width = .5, linewidth = .5) +
+
+    geom_point(
+        # aes(fill = Group),
+        fill = "grey10", color = "black",
+        shape = 21, size = 1.5, stroke = .1,
+        position = position_jitternormal(sd_y = 0, sd_x = .04)
+    ) +
+
+    # stat_pvalue_manual(x, label = "p.adj.signif", hide.ns = TRUE,
+    #                    tip.length = 0.005, vjust = .8) +
+
+    scale_y_continuous(breaks = c(2.5, 5, 10, 15)) +
+
+    # scale_fill_npg() +
+    
+    scale_fill_manual(
+        values = paletteer_d("ggthemes::Color_Blind")
+    ) +
+
+    guides(x = "axis_nested") +
+
+    theme_minimal(base_family = "Calibri") +
+
+    theme(
+        legend.position = "bottom",
+        # axis.title.x = element_blank(),
+        ggh4x.axis.nestline.x = element_line(color = "grey", linewidth = 0.25),
+
+        panel.grid = element_blank(),
+
+        axis.line = element_line(linewidth = .3),
+        axis.ticks = element_line(linewidth = .3)
+    ) +
+
+    labs(y = "Shannon index", x = "Climate zone")
+
+
+
+# Fig. 2 B =============================================
+
+library(ggplot2)
+library(ggrepel)
+library(ggsci)
+
+library(extrafont)
+
+library(ggdensity)
+library(ggh4x)
+
+library(patchwork)
+
+
+a = ggplot(data = s0, aes(x = MDS1, y = MDS2)) +
+
+    geom_point(
+        aes(fill = Group.x),
+        color = "white",
+        stroke = .25, shape = 21, size = 2
+    ) +
+
+    # geom_text_repel(
+    #     aes(label = ClimateZone),
+    #     max.overlaps = Inf,
+    #     size = 3,
+    #     segment.linetype = "dotted",
+    #     segment.size = .35,
+    #
+    #     family = "Calibri"
+    # ) +
+
+    # scale_fill_viridis_d(option = "magma") +
+
+    # scale_fill_grey() +
+
+    # scale_fill_npg() +
+    # 
+    # scale_color_npg() +
+
+    scale_fill_manual(values = paletteer_d("ggthemes::Color_Blind")) +
+    scale_color_manual(values = paletteer_d("ggthemes::Color_Blind")) +
+
+    coord_cartesian(expand = TRUE, clip = "off") +
+
+    theme_minimal(base_family = "Calibri") +
+
+    theme(
+        legend.position = "none",
+        axis.line = element_line(linewidth = .3),
+        axis.ticks = element_line(linewidth = .3),
+        
+        # axis.title.x = element_blank(),
+
+        panel.grid = element_blank()
+    ) +
+
+    # guides(
+    #     fill = guide_legend(title.position = "top"),
+    #     color = guide_legend(title.position = "top"),
+    #     alpha = guide_legend(title.position = "top")
+    # ) +
+    
+    labs(x = "NMDS1", y = "NMDS2")
+
+
+
+
+b = ggplot(data = s0, aes(x = MDS1, y = MDS2)) +
+
+    geom_hdr(aes(fill = Group.x), show.legend = FALSE) +
+
+    geom_point(
+        aes(fill = Group.x),
+        color = "white",
+        stroke = .25, shape = 21, size = 2
+    ) +
+
+    # scale_fill_npg() +
+    # scale_color_npg() +
+    
+    scale_fill_manual(values = paletteer_d("ggthemes::Color_Blind")) +
+    scale_color_manual(values = paletteer_d("ggthemes::Color_Blind")) +
+
+    # facet_wrap(vars(Group), nrow = 1) +
+
+    # scale_y_continuous(expand = c(0, 0)) +
+    # scale_x_continuous(expand = c(0, 0)) +
+
+    coord_cartesian(expand = TRUE, clip = "on") +
+
+    facet_wrap2(vars(ClimateZone), nrow = 3, axes = "all") +
+
+    theme_minimal(base_family = "Calibri") +
+
+    theme(
+        legend.position = "none",
+        strip.text = element_text(face = "bold"),
+
+        panel.grid = element_blank(),
+
+        axis.line = element_line(linewidth = .3),
+        axis.ticks = element_line(linewidth = .3),
+        axis.text = element_text(size = 6)
+    ) +
+
+    # guides(
+    #     fill = guide_legend(title.position = "top"),
+    #     color = guide_legend(title.position = "top"),
+    #     alpha = guide_legend(title.position = "top")
+    # ) +
+    
+    labs(x = 'NMDS1', y = "NMDS2")
+
+
+
+
+
+# gr2 = (a / b) +
+#     plot_layout(guides = 'collect') &
+#     theme(
+#         legend.title = element_blank(),
+#         legend.position = "bottom"
+#     )
+
+# Fig. 2 C =============================================
+
+prs = fread("emp-soil-analysis-clean-sub5k/geospatial-plot.txt")
+
+
+gr3 = ggplot(data = prs, aes(x = geodistance, y = BrayCurtis)) +
+
+    geom_point(shape = 21, color = "grey50", fill = "grey75",
+               stroke = .25, size = 1.5) +
+
+    geom_smooth(formula =  y ~ x, # method = "gam",
+                span = 1, color = "red", linewidth = 1.25) +
+
+    scale_x_continuous(
+        expand = c(0, 0),
+        labels = scales::comma_format(scale = .001)
+    ) +
+
+    scale_y_continuous(expand = c(0, 0)) +
+
+    coord_cartesian(expand = TRUE, clip = "on") +
+
+    theme_minimal(base_family = "Calibri") +
+
+    theme(
+        panel.grid = element_line(linewidth = .3, linetype = "dashed"),
+
+        axis.title.x = element_text(margin = margin(t = 10)),
+        axis.title.y = element_text(margin = margin(r = 10)),
+        
+        axis.line = element_line(linewidth = .3),
+        axis.ticks = element_line(linewidth = .3)
+    ) +
+
+    labs(
+        x = "Geographic distance (km)", 
+        y = "Bray Curtis dissimilarity"
+    )
+
+# patchwork =================================
+
+
+
+multi = wrap_plots(gr3, gr1, a, b, nrow = 2)  +
+    
+    plot_layout(guides = 'collect') &
+    
+    theme(
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        plot.margin = margin(10, 10, 10, 10)
+    )
+
+
+ggsave(
+    plot = multi, filename = "Fig2.jpeg",
+    width = 12, height = 12, units = "in"
+)
+
+
+
+
+

@@ -22,24 +22,19 @@ library(rstatix)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k/abundance-table.Soil (non-saline).txt"
-centralites     <- "emp-soil-analysis-clean-sub5k/centralities-bootstrap.txt"
-taxa_map        <- "emp-soil-analysis-clean-sub5k/taxonomy-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-sub10k/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-sub10k/abundance-table.Soil (non-saline).txt"
+centralites     <- "emp-soil-analysis-clean-sub10k/centralities-bootstrap.txt"
 workdir         <- dirname(centralites)
 climate_info    <- "climate-classification-info.csv"
 
 
 df           <- fread(centralites)
 climate_info <- fread(climate_info)
-taxa_map <- fread(taxa_map)
 
 centralities_stats <- list()
 
 df = merge(df, climate_info, by.x = "ClimateZone", by.y = "Code", all.x = TRUE)
-df = merge(df, taxa_map, by.x = "Taxa", by.y = "TaxaIDabv", all.x = TRUE)
-
-df$TaxaID = NULL
 
 for(i in c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")) {
     
@@ -59,81 +54,190 @@ df[which(Family == ""), ]$Family   = "unassigned"
 df[which(Genus == ""), ]$Genus     = "unassigned"
 df[which(Species == ""), ]$Species = "unassigned"
 
-library(ggplot2)
-library(ggforce)
 
-# ggplot(data = df, aes(x = ClimateZone, y = degree)) +
-#     
-#     geom_point(position = position_jitternormal(sd_y = 0, sd_x = .05),
-#                color = "grey50") +
-#     
-#     geom_boxplot(fill = NA, outlier.shape = NA)
+stats = list()
 
-centralites_taxonomy_stats = list()
+stats[[1]] = df |>
+    pairwise_wilcox_test(degree ~ ClimateZone) |>
+    setDT()
 
-for(i in c("Phylum", "Class", "Order", "Family", "Genus", "Species")) {
-    
-    df = df[, by = c("ClimateZone", i), Filt := .N]
-    
-    stats = df[which(Filt >= 3), ]
-    
-    stats$var = stats[[i]]
-    
-    # Degree centrality -------------
-    degree.stats = stats %>% 
-        
-        group_by(var) %>%
-        
-        wilcox_test(degree ~ ClimateZone, p.adjust.method = "holm")
-    
-    degree.stats = setDT(degree.stats)
-    
-    
-    # Betweenness centrality ------------------
-    between.stats = stats %>% 
-        
-        group_by(var) %>%
-        
-        wilcox_test(between ~ ClimateZone, p.adjust.method = "holm")
-    
-    between.stats = setDT(between.stats)
-    
-    # Closeness centrality ------------------
-    close.stats = stats %>% 
-        
-        group_by(var) %>%
-        
-        wilcox_test(close ~ ClimateZone, p.adjust.method = "holm")
-    
-    close.stats = setDT(close.stats)
-    
-    
-    # Eigenvector centrality ------------------
-    eigenv.stats = stats %>% 
-        
-        group_by(var) %>%
-        
-        wilcox_test(eigenv ~ ClimateZone, p.adjust.method = "holm")
-    
-    eigenv.stats = setDT(eigenv.stats)
-    
-    centralites_taxonomy_stats[[i]] = rbind(
-        degree.stats,
-        between.stats,
-        close.stats,
-        eigenv.stats
-    )
-    
-}
+stats[[2]] = df |>
+    pairwise_wilcox_test(between ~ ClimateZone) |>
+    setDT()
 
-centralites_taxonomy_stats = rbindlist(centralites_taxonomy_stats, idcol = "level")
+stats[[3]] = df |>
+    pairwise_wilcox_test(close ~ ClimateZone) |>
+    setDT()
+
+stats[[4]] = df |>
+    pairwise_wilcox_test(eigenv ~ ClimateZone) |>
+    setDT()
+
+stats = rbindlist(stats)
+
 
 fwrite(
-    centralites_taxonomy_stats, "centralites_taxonomy_stats.csv",
+    stats, paste0(workdir, "/centralities1.csv"),
     row.names = FALSE, quote = TRUE, sep = ","
 )
 
-# centralities_stats[["Degree"]] = stats
+
+stats = stats[which(p.adj <= .05)]
+
+stats = stats[, by = ".y.", .(clima = c(group1, group2))]
+stats = stats[, by = c(".y.", "clima"), .N]
+stats = stats[order(.y., -N), ]
+
+fwrite(
+    stats, paste0(workdir, "/centralities2.csv"),
+    row.names = FALSE, quote = TRUE, sep = ","
+)
+
+
+# library(ggplot2)
+# library(ggforce)
+# library(ggsci)
+# library(extrafont)
+# 
+# gr = ggplot(data = df, aes(x = ClimateZone, y = degree)) +
+# 
+#     geom_point(
+#         shape = 21, size = 2, stroke = .1, 
+#         aes(fill = Group),
+#         position = position_jitternormal(sd_y = 0, sd_x = .05),
+#         color = "grey20"
+#     ) +
+#     
+#     scale_fill_npg() +
+#     
+#     scale_y_continuous(expand = c(0, 0), limits = c(0, .08)) +
+# 
+#     # geom_boxplot(fill = NA, outlier.shape = NA, width = .75) +
+#     
+#     theme_minimal(base_family = "Calibri") +
+#     
+#     theme(
+#         legend.position = "bottom",
+#         legend.title = element_blank(),
+#         panel.grid = element_line(linewidth = .3, linetype = "dashed"),
+#         axis.line = element_line(linewidth = .3),
+#         axis.ticks = element_line(linewidth = .3),
+#         plot.margin = margin(10, 10, 10, 10)
+#     ) +
+#     
+#     guides(
+#         fill = guide_legend(
+#             override.aes = aes(size = 3.5)
+#         )
+#     )
+# 
+# 
+# ggsave(plot = gr, filename = "Degree-centrality.jpeg",
+#        width = 12, height = 8, units = "in")
+# 
+# gr = ggplot(data = df, aes(x = ClimateZone, y = eigenv)) +
+#     
+#     geom_point(
+#         shape = 21, size = 2, stroke = .1, 
+#         aes(fill = Group),
+#         position = position_jitternormal(sd_y = 0, sd_x = .05),
+#         color = "grey20"
+#     ) +
+#     
+#     scale_fill_npg() +
+#     
+#     scale_y_continuous(expand = c(0, 0), limits = c(0, 1)) +
+#     
+#     # geom_boxplot(fill = NA, outlier.shape = NA, width = .75) +
+#     
+#     theme_minimal(base_family = "Calibri") +
+#     
+#     theme(
+#         legend.position = "bottom",
+#         legend.title = element_blank(),
+#         panel.grid = element_line(linewidth = .3, linetype = "dashed"),
+#         axis.line = element_line(linewidth = .3),
+#         axis.ticks = element_line(linewidth = .3),
+#         plot.margin = margin(10, 10, 10, 10)
+#     ) +
+#     
+#     guides(
+#         fill = guide_legend(
+#             override.aes = aes(size = 3.5)
+#         )
+#     )
+# 
+# 
+# ggsave(plot = gr, filename = "eigenv-centrality.jpeg",
+#        width = 12, height = 8, units = "in")
+
+# centralites_taxonomy_stats = list()
+# 
+# for(i in c("Phylum", "Class", "Order", "Family", "Genus", "Species")) {
+#     
+#     df = df[, by = c("ClimateZone", i), Filt := .N]
+#     
+#     stats = df[which(Filt >= 3), ]
+#     
+#     stats$var = stats[[i]]
+#     
+#     # Degree centrality -------------
+#     
+#     degree.stats = stats %>% 
+#         
+#         group_by(var) %>%
+#         
+#         wilcox_test(degree ~ ClimateZone, p.adjust.method = "holm")
+#     
+#     degree.stats = setDT(degree.stats)
+#     
+#     
+#     # Betweenness centrality ------------------
+#     between.stats = stats %>% 
+#         
+#         group_by(var) %>%
+#         
+#         wilcox_test(between ~ ClimateZone, p.adjust.method = "holm")
+#     
+#     between.stats = setDT(between.stats)
+#     
+#     # Closeness centrality ------------------
+#     close.stats = stats %>% 
+#         
+#         group_by(var) %>%
+#         
+#         wilcox_test(close ~ ClimateZone, p.adjust.method = "holm")
+#     
+#     close.stats = setDT(close.stats)
+#     
+#     
+#     # Eigenvector centrality ------------------
+#     eigenv.stats = stats %>% 
+#         
+#         group_by(var) %>%
+#         
+#         wilcox_test(eigenv ~ ClimateZone, p.adjust.method = "holm")
+#     
+#     eigenv.stats = setDT(eigenv.stats)
+#     
+#     centralites_taxonomy_stats[[i]] = rbind(
+#         degree.stats,
+#         between.stats,
+#         close.stats,
+#         eigenv.stats
+#     )
+#     
+# }
+# 
+# centralites_taxonomy_stats = rbindlist(centralites_taxonomy_stats, idcol = "level")
+# 
+# fwrite(
+#     centralites_taxonomy_stats, 
+#     paste0(workdir, "/centralites3.csv"),
+#     row.names = FALSE, quote = TRUE, sep = ","
+# )
+
+# centralities_stats[[ "Degree" ]] = stats
 # 
 # df$`Level of Heat` = str_replace_all(df$`Level of Heat`, "summer", "sum")
 # 

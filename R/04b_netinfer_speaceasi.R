@@ -12,8 +12,8 @@ library(igraph)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k/abundance-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-sub10k/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-sub10k/abundance-table.Soil (non-saline).txt"
 workdir         <- dirname(sample_map)
 
 
@@ -46,7 +46,7 @@ cat(
 
 ## Create igraph objects
 ig.mb.emp <- adj2igraph(
-    getRefit(se.mb.emp), 
+    symBeta(getOptBeta(se.mb.emp), mode = 'maxabs'),
     vertex.attr = list(name = colnames(mm))
 )
 

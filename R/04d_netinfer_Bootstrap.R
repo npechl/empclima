@@ -13,11 +13,12 @@ library(progress)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k/abundance-table.Soil (non-saline).txt"
-graph_obj       <- "emp-soil-analysis-clean-sub5k/SpiecEasi-Soil (non-saline).graphml"
+sample_map      <- "emp-soil-analysis-clean-sub10k/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-sub10k/abundance-table.Soil (non-saline).txt"
+graph_obj       <- "emp-soil-analysis-clean-sub10k/SpiecEasi-Soil (non-saline).graphml"
+taxonomy        <- "emp-soil-analysis-clean-sub10k/taxonomy-table.Soil (non-saline).txt"
 workdir         <- dirname(sample_map)
-filterTaxaPar   <- 400 
+filterTaxaPar   <- 350 
 nbootstraps     <- 100
 
 
@@ -26,14 +27,15 @@ nbootstraps     <- 100
 
 s0 <- fread(sample_map)
 df <- fread(abundance_table)
+t0 <- fread(taxonomy)
 
 pb <- progress_bar$new(total = nbootstraps)
 
 rm(abundance_table, sample_map)
 gc()
 
-net_spieceasi <- read_graph(graph_obj, format = "graphml") 
-
+g <- read_graph(graph_obj, format = "graphml")
+g <- delete_edges(g, edges = which(E(g)$weight < 0))
 
 centralities <- list()
 globalProps  <- list()
@@ -50,13 +52,16 @@ for(b in seq_len(length.out = nbootstraps)) {
         
         s1 <- s0[which(ClimateZone == i), ]
         
-        mm <- setDF(df[, s1$SampleIDabv, with = FALSE], rownames = df$TaxaIDabv)
-        mm <- rowSums(mm)
-        mm <- sort(mm, decreasing = TRUE)
-        mm <- names(mm[which(mm != 0)])
-        mm <- sample(mm, ntaxa)
+        mm <- df[, s1$SampleIDabv, with = FALSE] |>
+            setDF(rownames = df$TaxaIDabv) |>
+            rowSums() |>
+            sort(decreasing = TRUE)
         
-        net_spieceasi_sub <- subgraph(net_spieceasi, mm)
+        mm <- mm[which(mm != 0)] |>
+            names() |>
+            sample(size = ntaxa)
+        
+        g_sub <- subgraph(g, mm)
         
         dt <- data.table(
             "ClimateZone" = i,
@@ -68,16 +73,16 @@ for(b in seq_len(length.out = nbootstraps)) {
             "eigenv"      = numeric(length = length(mm)) 
         )
         
-        tmp <- degree(net_spieceasi_sub, normalized = TRUE)
+        tmp <- degree(g_sub, normalized = TRUE)
         dt$degree <- tmp[match(dt$Taxa, names(tmp))]
         
-        tmp <- betweenness(net_spieceasi_sub, directed = FALSE, normalized = TRUE)
+        tmp <- betweenness(g_sub, directed = FALSE, normalized = TRUE)
         dt$between <- tmp[match(dt$Taxa, names(tmp))]
         
-        tmp <- closeness(net_spieceasi_sub, normalized = TRUE)
+        tmp <- closeness(g_sub, normalized = TRUE)
         dt$close <- tmp[match(dt$Taxa, names(tmp))]
         
-        tmp <- eigen_centrality(net_spieceasi_sub)$vector
+        tmp <- eigen_centrality(g_sub)$vector
         dt$eigenv <- tmp[match(dt$Taxa, names(tmp))]
         
         centralities_tmp[[ paste0(b, ";", i) ]] <- dt
@@ -85,11 +90,10 @@ for(b in seq_len(length.out = nbootstraps)) {
         globalProps_tmp[[i]] <- data.table(
             "ClimateZone"         = i,
             "nTaxa"               = ntaxa,
-            "Average path length" = mean_distance(net_spieceasi_sub),
-            "Transitivity"        = transitivity(net_spieceasi_sub),
-            "Modularity"          = modularity(cluster_walktrap(net_spieceasi_sub)),
-            # "Edge connectivity"   = edge_connectivity(net_spieceasi_sub),
-            "Density"             = edge_density(net_spieceasi_sub)
+            "Average path length" = mean_distance(g_sub),
+            "Transitivity"        = transitivity(g_sub),
+            "Modularity"          = modularity(cluster_fast_greedy(g_sub)),
+            "Density"             = edge_density(g_sub)
         )
         
     }
@@ -127,8 +131,7 @@ for(i in names(hubs)) {
     tmp = tmp[which(
         degree >= quantile(tmp$degree, probs = 0.95) &
             eigenv >= quantile(tmp$eigenv, probs = 0.95)
-    ), ]
-    
+    )]
     
     tmp = tmp[, c("ClimateZone", "Taxa"), with = FALSE]
     
@@ -137,8 +140,14 @@ for(i in names(hubs)) {
 
 hubs = rbindlist(hubs)
 
+hubs         = merge(hubs, t0, by.x = "Taxa", by.y = "TaxaIDabv", all.x = TRUE)
+centralities = merge(centralities, t0, by.x = "Taxa", by.y = "TaxaIDabv", all.x = TRUE)
+
+hubs$TaxaID         = NULL
+centralities$TaxaID = NULL
+
 fwrite(
-    hubs, paste0(workdir, "/hubs.txt"),
+    hubs, paste0(workdir, "/hubs-bootstrap.txt"),
     row.names = FALSE, quote = FALSE, sep = "\t"
 )
 
