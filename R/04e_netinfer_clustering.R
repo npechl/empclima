@@ -10,9 +10,9 @@ library(stringr)
 
 library(igraph)
 
-graph_obj            <- "emp-soil-analysis-clean-sub10k/SpiecEasi-Soil (non-saline).graphml"
-taxa_mapping         <- "emp-soil-analysis-clean-sub10k/taxonomy-table.Soil (non-saline).txt"
-centralities_mapping <- "emp-soil-analysis-clean-sub10k/centralities-bootstrap.txt"
+graph_obj            <- "test/SpiecEasi-Soil (non-saline).graphml"
+taxa_mapping         <- "test/taxonomy-table.Soil (non-saline).txt"
+centralities_mapping <- "test/centralities-bootstrap.txt"
 
 workdir  <- dirname(graph_obj)
 taxonomy <- fread(taxa_mapping)

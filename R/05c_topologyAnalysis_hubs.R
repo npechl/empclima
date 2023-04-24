@@ -14,10 +14,10 @@ library(stringr)
 # 
 # library(ggsci)
 
-sample_map   <- "emp-soil-analysis-clean-sub10k/sample-metadata.Soil (non-saline).txt"
+sample_map   <- "test/sample-metadata.Soil (non-saline).txt"
 # taxa_map     <- "emp-soil-analysis-clean-sub5k/taxonomy-table.Soil (non-saline).txt"
-centralities <- "emp-soil-analysis-clean-sub10k/centralities-bootstrap.txt"
-hubs         <- "emp-soil-analysis-clean-sub10k/hubs-bootstrap.txt"
+centralities <- "test/centralities-bootstrap.txt"
+hubs         <- "test/hubs-bootstrap.txt"
 workdir      <- dirname(sample_map)
 
 climate_info <- "climate-classification-info.csv"

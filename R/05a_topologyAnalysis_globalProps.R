@@ -18,7 +18,7 @@ library(stringr)
 
 # list of inputs ------------------------------------
 
-globalProps  <- "emp-soil-analysis-clean-sub10k/globalProps-bootstrap.txt"
+globalProps  <- "test/globalProps-bootstrap.txt"
 climate_info <- "climate-classification-info.csv"
 workdir      <- dirname(globalProps)
 

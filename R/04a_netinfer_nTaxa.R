@@ -15,8 +15,8 @@ library(stringr)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub10k/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub10k/abundance-table.Soil (non-saline).txt"
+sample_map      <- "test/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "test/abundance-table.Soil (non-saline).txt"
 workdir         <- dirname(sample_map)
 
 

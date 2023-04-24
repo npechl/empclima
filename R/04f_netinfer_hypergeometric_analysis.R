@@ -15,11 +15,11 @@ library(progress)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub10k/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub10k/abundance-table.Soil (non-saline).txt"
-graph_obj       <- "emp-soil-analysis-clean-sub10k/SpiecEasi-Soil (non-saline).graphml"
-taxa_map        <- "emp-soil-analysis-clean-sub10k/taxonomy-table.Soil (non-saline).txt"
-centralities    <- "emp-soil-analysis-clean-sub10k/centralities-bootstrap.txt"
+sample_map      <- "test/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "test/abundance-table.Soil (non-saline).txt"
+graph_obj       <- "test/SpiecEasi-Soil (non-saline).graphml"
+taxa_map        <- "test/taxonomy-table.Soil (non-saline).txt"
+centralities    <- "test/centralities-bootstrap.txt"
 workdir         <- dirname(sample_map)
 
 

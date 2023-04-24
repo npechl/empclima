@@ -16,8 +16,8 @@ library(extrafont)
 
 library(patchwork)
 
-biom_name       <- "data/biom/emp_deblur_90bp.subset_10k.biom"
-sample_metadata <- "emp-soil-analysis-clean-sub10k/emp_qiime_mapping_subset_10k.tsv"
+biom_name       <- "data-raw-test/emp_deblur_90bp.subset_2k.biom"
+sample_metadata <- "test/emp_qiime_mapping_subset_2k.tsv"
 empo3_ontology  <- "Soil (non-saline)"
 prevalence      <- .1
 
@@ -119,12 +119,12 @@ sam0 <- fread(sample_metadata)
         
         labs(x = "No. of samples", y = "No. of ESVs", title = empo3_ontology)
     
-    ggsave(
-        plot = gr, filename = paste0(
-            workdir, 
-            "/prevalence-curve-log10-", empo3_ontology, ".pdf"
-        ), width = 8, height = 8, device = cairo_pdf
-    )
+    # ggsave(
+    #     plot = gr, filename = paste0(
+    #         workdir, 
+    #         "/prevalence-curve-log10-", empo3_ontology, ".pdf"
+    #     ), width = 8, height = 8, device = cairo_pdf
+    # )
     
     ggsave(
         plot = gr, filename = paste0(
@@ -133,12 +133,12 @@ sam0 <- fread(sample_metadata)
         ), width = 8, height = 8
     )
     
-    ggsave(
-        plot = gr, filename = paste0(
-            workdir, 
-            "/prevalence-curve-log10-", empo3_ontology, ".svg"
-        ), width = 8, height = 8
-    )
+    # ggsave(
+    #     plot = gr, filename = paste0(
+    #         workdir, 
+    #         "/prevalence-curve-log10-", empo3_ontology, ".svg"
+    #     ), width = 8, height = 8
+    # )
     
     
     
