@@ -22,11 +22,11 @@ library(rstatix)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "test/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "test/abundance-table.Soil (non-saline).txt"
-centralites     <- "test/centralities-bootstrap.txt"
+sample_map      <- "emp-soil-analysis-clean-sub5k-v2/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-sub5k-v2/abundance-table.Soil (non-saline).txt"
+centralites     <- "emp-soil-analysis-clean-sub5k-v2/centralities-bootstrap.txt"
 workdir         <- dirname(centralites)
-climate_info    <- "climate-classification-info.csv"
+climate_info    <- "draft/Supplementary Table 1.csv"
 
 
 df           <- fread(centralites)

@@ -9,10 +9,10 @@ library(rbiom)
 library(data.table)
 library(stringr)
 
-biom_name        <- "data-raw-test/emp_deblur_90bp.subset_2k.biom"
-sample_metadata  <- "test/emp_qiime_mapping_subset_2k.tsv"
+biom_name        <- "data-raw/emp_deblur_90bp.subset_5k.biom"
+sample_metadata  <- "emp-soil-analysis-clean-sub5k-v2/emp_qiime_mapping_subset_5k.tsv"
 empo3_ontology   <- "Soil (non-saline)"
-abundance_thres  <- 1e-04
+abundance_thres  <- 1e-05
 prevalence_thres <- 0.10
 workdir          <- dirname(sample_metadata)
 

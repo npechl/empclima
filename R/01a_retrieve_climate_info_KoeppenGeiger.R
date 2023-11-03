@@ -11,9 +11,9 @@ library(stringr)
 
 library(kgc)
 
-sample_metadata     <- "data-raw-test/emp_qiime_mapping_subset_2k.tsv"
+sample_metadata     <- "data-raw/emp_qiime_mapping_subset_5k.tsv"
 koeppen_geiger_info <- "climate-classification-info.csv"
-workdir             <- "test"
+workdir             <- "emp-soil-analysis-clean-sub5k-v2"
 
 if(dir.exists(workdir)) {
     

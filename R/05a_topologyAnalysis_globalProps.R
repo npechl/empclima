@@ -18,8 +18,8 @@ library(stringr)
 
 # list of inputs ------------------------------------
 
-globalProps  <- "test/globalProps-bootstrap.txt"
-climate_info <- "climate-classification-info.csv"
+globalProps  <- "emp-soil-analysis-clean-sub5k/globalProps-bootstrap.txt"
+climate_info <- "draft/Supplementary Table 1.csv"
 workdir      <- dirname(globalProps)
 
 
@@ -54,6 +54,13 @@ df = melt(
                     "Precipitation Type", "Level of Heat", "Run"), 
     variable.factor = FALSE, value.factor = FALSE
 )
+
+
+ggplot(data = df, aes(x = ClimateZone, y = value)) +
+    
+    geom_boxplot() +
+    
+    facet_wrap(vars(variable), scales = "free_y")
 
 # 
 # gr = ggplot(data = df, aes(x = ClimateZone, y = value)) +

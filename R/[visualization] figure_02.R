@@ -60,6 +60,13 @@ gr1 = ggplot(data = s0,
         shape = 21, size = 1.5, stroke = .1,
         position = position_jitternormal(sd_y = 0, sd_x = .04)
     ) +
+    
+    geom_hline(yintercept = mean(s0$shannon), linetype = 2, linewidth = 1, color = "yellow3") +
+    
+    stat_compare_means(
+        label = "p.signif", method = "wilcox.test", ref.group = ".all.", 
+        hide.ns = TRUE
+    ) +
 
     # stat_pvalue_manual(x, label = "p.adj.signif", hide.ns = TRUE,
     #                    tip.length = 0.005, vjust = .8) +
@@ -72,17 +79,23 @@ gr1 = ggplot(data = s0,
         values = paletteer_d("ggthemes::Color_Blind")
     ) +
 
-    guides(x = "axis_nested") +
+    guides(x = "axis_nested", fill = guide_legend(
+        label.theme = element_text(size = 11, family = "Calibri")
+    )) +
 
     theme_minimal(base_family = "Calibri") +
 
     theme(
         legend.position = "bottom",
+        legend.title = element_blank(),
         # axis.title.x = element_blank(),
         ggh4x.axis.nestline.x = element_line(color = "grey", linewidth = 0.25),
 
         panel.grid = element_blank(),
 
+        axis.title = element_text(size = 11),
+        axis.text = element_text(size = 11),
+        
         axis.line = element_line(linewidth = .3),
         axis.ticks = element_line(linewidth = .3)
     ) +
@@ -172,8 +185,8 @@ b = ggplot(data = s0, aes(x = MDS1, y = MDS2)) +
     # scale_fill_npg() +
     # scale_color_npg() +
     
-    scale_fill_manual(values = paletteer_d("ggthemes::Color_Blind")) +
-    scale_color_manual(values = paletteer_d("ggthemes::Color_Blind")) +
+    scale_fill_manual(values = paletteer_d("ggthemes::Color_Blind"), guide = "none") +
+    scale_color_manual(values = paletteer_d("ggthemes::Color_Blind"), guide = "none") +
 
     # facet_wrap(vars(Group), nrow = 1) +
 
@@ -188,20 +201,15 @@ b = ggplot(data = s0, aes(x = MDS1, y = MDS2)) +
 
     theme(
         legend.position = "none",
-        strip.text = element_text(face = "bold"),
+        strip.text = element_text(face = "bold", size = 11),
 
         panel.grid = element_blank(),
 
         axis.line = element_line(linewidth = .3),
         axis.ticks = element_line(linewidth = .3),
-        axis.text = element_text(size = 6)
-    ) +
-
-    # guides(
-    #     fill = guide_legend(title.position = "top"),
-    #     color = guide_legend(title.position = "top"),
-    #     alpha = guide_legend(title.position = "top")
-    # ) +
+        axis.text = element_text(size = 8),
+        axis.title = element_text(size = 11)
+    )
     
     labs(x = 'NMDS1', y = "NMDS2")
 
@@ -220,14 +228,26 @@ b = ggplot(data = s0, aes(x = MDS1, y = MDS2)) +
 
 prs = fread("emp-soil-analysis-clean-sub5k/geospatial-plot.txt")
 
+prs$BrayCurtis = 1 - prs$BrayCurtis
+
 
 gr3 = ggplot(data = prs, aes(x = geodistance, y = BrayCurtis)) +
 
-    geom_point(shape = 21, color = "grey50", fill = "grey75",
-               stroke = .25, size = 1.5) +
+    geom_point(shape = 20, color = "grey75",
+               size = 1.5) +
 
-    geom_smooth(formula =  y ~ x, # method = "gam",
-                span = 1, color = "red", linewidth = 1.25) +
+    geom_smooth(
+        formula =  y ~ x, # method = "gam",
+        span = 1, 
+        color = "red", 
+        linewidth = 1
+    ) +
+    
+    annotate(
+        "text", x = 7500000, y = .8, 
+        label = "Mantel: R-squared = 0.24, p-value < 0.001", 
+        family = "Calibri", fontface = "bold", hjust = .5
+    ) +
 
     scale_x_continuous(
         expand = c(0, 0),
@@ -243,8 +263,10 @@ gr3 = ggplot(data = prs, aes(x = geodistance, y = BrayCurtis)) +
     theme(
         panel.grid = element_line(linewidth = .3, linetype = "dashed"),
 
-        axis.title.x = element_text(margin = margin(t = 10)),
-        axis.title.y = element_text(margin = margin(r = 10)),
+        axis.title.x = element_text(margin = margin(t = 10), size = 11),
+        axis.title.y = element_text(margin = margin(r = 10), size = 11),
+        
+        axis.text = element_text(size = 11),
         
         axis.line = element_line(linewidth = .3),
         axis.ticks = element_line(linewidth = .3)
@@ -252,26 +274,29 @@ gr3 = ggplot(data = prs, aes(x = geodistance, y = BrayCurtis)) +
 
     labs(
         x = "Geographic distance (km)", 
-        y = "Bray Curtis dissimilarity"
+        y = "Bray Curtis Similarity"
     )
 
 # patchwork =================================
 
+my = gr3 | gr1
 
-
-multi = wrap_plots(gr3, gr1, a, b, nrow = 2)  +
+multi = wrap_plots(my, b, ncol = 1) +
+    
+    plot_annotation(tag_levels = 'A') +
     
     plot_layout(guides = 'collect') &
     
     theme(
         legend.position = "bottom",
         legend.title = element_blank(),
+        plot.tag = element_text(face = "bold"),
         plot.margin = margin(10, 10, 10, 10)
     )
 
 
 ggsave(
-    plot = multi, filename = "Fig2.jpeg",
+    plot = multi, filename = "Fig2.pdf", device = cairo_pdf,
     width = 12, height = 12, units = "in"
 )
 

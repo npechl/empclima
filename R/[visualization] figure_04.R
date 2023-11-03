@@ -9,16 +9,18 @@ gc()
 library(data.table)
 library(stringr)
 
-
+library(ggh4x)
 library(ggplot2)
 library(ggforce)
+
+library(ggpubr)
 library(paletteer)
 
 library(extrafont)
 
 a = fread("emp-soil-analysis-clean-sub5k/globalProps-bootstrap.txt")
 
-an = fread("climate-classification-info.csv")
+an = fread("draft/Supplementary Table 1.csv")
 
 a$nTaxa = NULL
 a$Run   = NULL
@@ -48,8 +50,8 @@ gr1 = ggplot(data = a, aes(x = ClimateZone, y = value)) +
     ) +
     
     geom_point(
-        shape = 21, color = "black", fill = "grey10",
-        size = 1, stroke = .25,
+        shape = 20, color = "grey10", fill = "grey10",
+        size = .75,
         position = position_jitternormal(sd_y = 0, sd_x = .05)
     ) +
     
@@ -58,12 +60,29 @@ gr1 = ggplot(data = a, aes(x = ClimateZone, y = value)) +
         outlier.shape = NA
     ) +
     
-    scale_fill_manual(
-        values = paletteer_d("ggthemes::Color_Blind"),
-        guide = guide_legend(title.position = "top")
+    geom_hline(data = a[, by = variable, .(value = mean(value))],
+               mapping = aes(yintercept = value),
+               linetype = 2, linewidth = 1, color = "yellow3") +
+    
+    stat_compare_means(
+        label = "p.signif", method = "wilcox.test", ref.group = ".all.", 
+        hide.ns = TRUE,
+        symnum.args = list(
+            cutpoints = c(0, 0.01, 0.05, Inf), 
+            symbols = c("**", "*", "ns")
+        )
     ) +
     
-    facet_wrap(vars(variable), scales = "free_y", nrow = 1) +
+    scale_fill_manual(
+        values = paletteer_d("ggthemes::Color_Blind"),
+        guide = guide_legend(
+            title.position = "top",
+            title.theme = element_text(size = 11, family = "Calibri"),
+            label.theme = element_text(size = 11, family = "Calibri")
+        )
+    ) +
+    
+    facet_wrap2(vars(variable), scales = "free_y", nrow = 2, axes = "all") +
     
     theme_minimal(base_family = "Calibri") +
     
@@ -71,12 +90,16 @@ gr1 = ggplot(data = a, aes(x = ClimateZone, y = value)) +
         legend.position = "bottom",
         legend.justification = c(0, 1),
         
-        strip.text = element_text(face = "bold"),
+        strip.text = element_text(face = "bold", size = 11),
+        axis.title = element_text(size = 11),
+        
+        axis.text.y = element_text(size = 11),
+        axis.text.x = element_text(size = 11, angle = 90, hjust = 1, vjust = .5),
         
         axis.line = element_line(),
         axis.ticks = element_line(),
         
-        panel.grid = element_line(linetype = "dashed"),
+        panel.grid = element_blank(), # element_line(linetype = "dashed"),
         
         axis.title.y = element_blank()
     )
@@ -102,7 +125,7 @@ sample_map   <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline)
 taxa_map     <- "emp-soil-analysis-clean-sub5k/taxonomy-table.Soil (non-saline).txt"
 centralities <- "emp-soil-analysis-clean-sub5k/centralities-bootstrap.txt"
 hubs         <- "emp-soil-analysis-clean-sub5k/hubs-bootstrap.txt"
-tree         <- "emp90.5000_1000_rxbl_placement_pruned75.tog.tre"
+tree         <- "data-raw/emp90.5000_1000_rxbl_placement_pruned75.tog.tre"
 workdir      <- dirname(sample_map)
 
 climate_info <- "climate-classification-info.csv"
@@ -306,11 +329,12 @@ my_col[(length(my_col) - 1):length(my_col)] = c("white", "grey50")
 
 gr3 = ggplot(data = df, aes(x = variable, y = Freq)) +
     
-    geom_col(aes(fill = lbl), position = "fill", color = "grey") +
+    geom_col(aes(fill = lbl), position = "fill", color = "grey", linewidth = .25) +
     
     scale_fill_manual(
         values = my_col,
-        guide = guide_legend(ncol = 6)
+        guide = guide_legend(ncol = 6, 
+                             label.theme = element_text(size = 11, family = "Calibri"))
     ) +
     
     scale_y_continuous(expand = c(0, 0), labels = scales::percent) +
@@ -326,11 +350,12 @@ gr3 = ggplot(data = df, aes(x = variable, y = Freq)) +
         legend.title = element_blank(),
         
         axis.title = element_blank(),
-        axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 11),
+        axis.text.y = element_text(size = 11),
         
         panel.spacing = unit(1, "lines"),
         
-        strip.text = element_text(face = "bold"),
+        strip.text = element_text(face = "bold", size = 11),
         
         panel.grid.minor = element_blank()
     )
@@ -342,11 +367,78 @@ gr3 = ggplot(data = df, aes(x = variable, y = Freq)) +
 
 df = fread("emp-soil-analysis-clean-sub5k/negative.csv")
 
+x0 = df[which(level == "Kingdom")]
+
+x0$level = x0$from = x0$to = NULL
+
+x0 = melt(
+    x0, id.vars = "ClimateZone", 
+    value.factor = FALSE, variable.factor = FALSE
+)
+
+x0 = x0[order(ClimateZone, variable)]
+x0 = x0[, by = ClimateZone, ymax := cumsum(value)]
+
+x0 = x0[, by = ClimateZone, ymin := c(0, head(ymax, -1))]
+
+
+# Make the plot
+gr4 = ggplot(x0, 
+       aes(
+           ymax = ymax, ymin = ymin, 
+           xmax = 4, xmin = 3, 
+           fill = variable
+       )) +
+    
+    geom_rect() +
+    
+    scale_fill_manual(
+        values = c(
+            "Negative co-occurrence links" = "red3",
+            "Positive co-occurrence links" = "#1170AAFF"
+        ),
+        
+        guide = guide_legend(
+            label.theme = element_text(size = 11, family = "Calibri")
+        )
+    ) +
+    
+    # scale_fill_manual(values = paletteer_d("ggthemes::Color_Blind")) +
+    
+    coord_polar(theta = "y") +
+    
+    facet_wrap2(vars(ClimateZone), nrow = 1) +
+    
+    xlim(c(2, 4)) +
+    
+    theme_void(base_family = "Calibri") +
+    
+    theme(
+        strip.text = element_text(face = "bold", size = 11),
+        
+        legend.position = "bottom",
+        legend.justification = c(0, 1),
+        plot.tag = element_text(face = "bold"),
+        legend.title = element_blank()
+    )
+
 
 # patchwork ================================
 
+library(patchwork)
+
+# multi = gr1 / (gr2 | gr3) / gr4 +
+#     
+#     plot_annotation(tag_levels = 'A') +
+#     plot_layout(heights = c(1.5, 2.5, .5)) &
+#     
+#     theme(
+#         plot.margin = margin(10, 10, 10, 10)
+#     )
 
 multi = gr1 / (gr2 | gr3) +
+    
+    plot_annotation(tag_levels = 'A') +
     plot_layout(heights = c(1, 2)) &
     
     theme(
@@ -355,12 +447,15 @@ multi = gr1 / (gr2 | gr3) +
 
 
 ggsave(
-    plot = multi, filename = "Fig4.jpeg",
+    plot = multi, filename = "Fig4.pdf", device = cairo_pdf,
     width = 14, height = 14, units = "in"
 )
 
 
-
+# ggsave(
+#     plot = gr4, filename = "Fig4b.jpeg",
+#     width = 14, height = 7, units = "in"
+# )
 
 
 

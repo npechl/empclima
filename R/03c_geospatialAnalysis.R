@@ -14,8 +14,8 @@ library(vegan)
 # library(ggplot2)
 # library(extrafont)
 
-sample_map      <- "test/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "test/abundance-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-sub5k-v2/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-sub5k-v2/abundance-table.Soil (non-saline).txt"
 workdir         <- dirname(sample_map)
 
 s0 = fread(sample_map)
@@ -35,6 +35,9 @@ prs = melt(
     variable.name = "P2", value.name = "BrayCurtis",
     variable.factor = FALSE, value.factor = FALSE
 )
+
+# similarity
+# prs$BrayCurtis = 1 - prs$BrayCurtis
 
 # prs = t(combn(s0$SampleIDabv, 2))
 
@@ -68,6 +71,9 @@ dist.geo   = dcast(data = prs, P1 ~ P2, value.var = "geodistance", fill = 0)
 dist.abund = as.matrix(setDF(dist.abund[, 2:ncol(dist.abund)], rownames = dist.abund$P1))
 dist.geo   = as.matrix(setDF(dist.geo[, 2:ncol(dist.geo)], rownames = dist.geo$P1))
 
+# dist.abund = exp(dist.abund)
+# dist.geo = exp(dist.geo)
+
 dist.abund = as.dist(dist.abund)
 dist.geo   = as.dist(dist.geo)
 
@@ -90,35 +96,35 @@ writeLines(abund_geo, paste0(workdir, "/geospatial.txt"))
 
 
 # gr = ggplot(data = prs, aes(x = geodistance, y = BrayCurtis)) +
-#     
+# 
 #     geom_point(shape = 21, color = "grey50", fill = "grey75",
 #                stroke = .25, size = 1.5) +
-#     
-#     geom_smooth(formula =  y ~ x, # method = "gam", 
+# 
+#     geom_smooth(formula =  y ~ x, # method = "gam",
 #                 span = 1, color = "red", linewidth = 1.25) +
-#     
+# 
 #     scale_x_continuous(
 #         expand = c(0, 0),
 #         labels = scales::comma_format(scale = .001)
 #     ) +
-#     
+# 
 #     scale_y_continuous(expand = c(0, 0)) +
-#     
+# 
 #     coord_cartesian(expand = TRUE, clip = "off") +
-#     
+# 
 #     theme_minimal(base_family = "Calibri") +
-#     
+# 
 #     theme(
-#         
+# 
 #         axis.ticks = element_line(linewidth = .3, color = "grey90"),
 #         panel.grid = element_line(linewidth = .3, color = "grey90"),
-#         
+# 
 #         axis.title.x = element_text(margin = margin(t = 10)),
 #         axis.title.y = element_text(margin = margin(r = 10)),
-#         
+# 
 #         plot.margin = margin(20, 20, 20, 20)
 #     ) +
-#     
+# 
 #     labs(
 #         x = "Geographic distance (km)", y = "Bray Curtis dissimilarity"
 #     )

@@ -15,11 +15,11 @@ library(progress)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "test/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "test/abundance-table.Soil (non-saline).txt"
-graph_obj       <- "test/SpiecEasi-Soil (non-saline).graphml"
-taxa_map        <- "test/taxonomy-table.Soil (non-saline).txt"
-centralities    <- "test/centralities-bootstrap.txt"
+sample_map      <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-sub5k/abundance-table.Soil (non-saline).txt"
+# graph_obj       <- "emp-soil-analysis-clean-sub5k-v2/SpiecEasi-Soil (non-saline).graphml"
+taxa_map        <- "emp-soil-analysis-clean-sub5k/taxonomy-table.Soil (non-saline).txt"
+centralities    <- "emp-soil-analysis-clean-sub5k/centralities-bootstrap.txt"
 workdir         <- dirname(sample_map)
 
 
@@ -42,6 +42,8 @@ for(i in c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"))
     
 }
 
+
+
 centr = fread(centralities)
 centr = unique(centr[, c("ClimateZone", "Taxa"), with = FALSE])
 
@@ -50,21 +52,37 @@ centr = merge(centr, taxa_map, by.x = "Taxa", by.y = "TaxaIDabv", all.x = TRUE)
 # rm(abundance_table, sample_map)
 # gc()
 
-net_spieceasi <- read_graph(graph_obj, format = "graphml") 
-net_spieceasi <- delete_edges(net_spieceasi, edges = which(E(net_spieceasi)$weight < 0))
+# net_spieceasi <- read_graph(graph_obj, format = "graphml") 
+# net_spieceasi <- delete_edges(net_spieceasi, edges = which(E(net_spieceasi)$weight < 0))
+
+net_spieceasi = workdir |> 
+    list.files(pattern = "graphml", full.names = TRUE) |>
+    lapply(function(x) {
+        
+        g <- x |> read_graph(format = "graphml")
+        g <- g |> delete_edges( edges = which(E(g)$weight < 0))
+        
+        return(g)
+        
+    })
+
+names(net_spieceasi) = workdir |> 
+    list.files(pattern = "graphml", full.names = TRUE) |>
+    basename() |>
+    str_remove_all("SpiecEasi|graphml|-|\\.")
 
 over = list()
 
-for(i in unique(s0$ClimateZone)) {
+for(i in names(net_spieceasi)) {
     
     s1 <- s0[which(ClimateZone == i), ]
     
-    mm <- setDF(df[, s1$SampleIDabv, with = FALSE], rownames = df$TaxaIDabv)
-    mm <- rowSums(mm)
-    mm <- sort(mm, decreasing = TRUE)
-    mm <- names(mm[which(mm != 0)])
+    # mm <- setDF(df[, s1$SampleIDabv, with = FALSE], rownames = df$TaxaIDabv)
+    # mm <- rowSums(mm)
+    # mm <- sort(mm, decreasing = TRUE)
+    # mm <- names(mm[which(mm != 0)])
         
-    net_spieceasi_sub <- subgraph(net_spieceasi, mm)
+    net_spieceasi_sub <- net_spieceasi[[i]] # subgraph(net_spieceasi, mm)
     
     dt = as_long_data_frame(net_spieceasi_sub)
     dt = setDT(dt)
@@ -97,7 +115,7 @@ for(i in unique(s0$ClimateZone)) {
 
 
 rm(df, dt, net_spieceasi, net_spieceasi_sub)
-rm(s0, s1, taxa_map, i, mm, abundance_table, graph_obj, sample_map)
+rm(s0, s1, taxa_map, i, abundance_table, sample_map)
 gc()
 
 

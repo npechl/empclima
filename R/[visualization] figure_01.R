@@ -16,7 +16,7 @@ library(rbiom)
 df = fread("emp-soil-analysis-clean-sub5k/prevalence.csv")
 
 s  = fread("emp-soil-analysis-clean-sub5k/emp_qiime_mapping_subset_5k.tsv")
-m  = read.biom(src = "data/biom/emp_deblur_90bp.subset_5k.biom", tree = FALSE)
+m  = read.biom(src = "data-raw/emp_deblur_90bp.subset_5k.biom", tree = FALSE)
 
 s = s[which(empo_3 == "Soil (non-saline)")]
 
@@ -81,7 +81,8 @@ gr1 = ggplot(data = df, aes(x = `No. of Samples`, y = `No. of ESVs`)) +
         plot.subtitle = element_text(margin = margin(b = 10)),
         plot.title.position = "plot",
         
-        axis.text = element_text(size = 8),
+        axis.text = element_text(size = 11),
+        axis.title = element_text(size = 11),
         
         panel.border = element_rect(fill = NA, linewidth = .3)
     ) +
@@ -92,7 +93,7 @@ gr1 = ggplot(data = df, aes(x = `No. of Samples`, y = `No. of ESVs`)) +
 
 df = fread("emp-soil-analysis-clean-sub5k/ESVdistribution.csv")
 
-s = fread("climate-classification-info.csv")
+s = fread("Supplementary Table 1.csv")
 
 
 df = merge(df, s, by.x = "ClimateZone", by.y = "Code")
@@ -140,6 +141,9 @@ gr2 = ggplot(data = df, aes(x = Group, y = `No of Samples`)) +
         
         axis.title.x = element_blank(),
         
+        axis.text = element_text(size = 11),
+        axis.title.y = element_text(size = 11),
+        
         panel.grid.minor = element_blank(),
         panel.grid.major = element_line(linewidth = .3, linetype = "dashed"),
         
@@ -171,7 +175,7 @@ library(raster)
 # library(sf)
 
 sample_metadata        <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
-climate_classification <- "Beck_KG_V1/Beck_KG_V1_present_0p083.tif"
+climate_classification <- "Beck_KG_V1/Beck_KG_V1_present_0p5.tif"
 climate_info           <- "Beck_KG_V1/classification.txt"
 workdir                <- dirname(sample_metadata)
 
@@ -246,8 +250,8 @@ gr3 = ggplot() +
         fill = guide_legend(
             nrow = 2, 
             override.aes = list(shape = 21, color = "white", size = .75),
-            byrow = TRUE
-            # label.theme = element_text(size = 1)
+            byrow = TRUE,
+            label.theme = element_text(size = 11, family = "Calibri")
         )
     )
 
@@ -262,20 +266,19 @@ gr3 = ggplot() +
 library(patchwork)
 
 
-multi = (gr1 | gr2) &
-    theme(
-        plot.margin = margin(10, 10, 10, 10)
-    )
+multi = (gr1 | gr2) / gr3 + 
+    
+    plot_layout(heights = c(1, 1.5))
 
 ggsave(
-    plot = multi, filename = "Fig1AB.jpeg",
-    width = 12, height = 6, units = "in"
+    plot = multi, filename = "Fig1.pdf", device = cairo_pdf,
+    width = 12, height = 10, units = "in"
 )
 
-ggsave(
-    plot = gr3, filename = "Fig1C.jpeg",
-    width = 12, height = 6, units = "in"
-)
+# ggsave(
+#     plot = gr3, filename = "Fig1C.jpeg",
+#     width = 12, height = 6, units = "in", dpi = 600
+# )
 
 
 

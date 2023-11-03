@@ -13,12 +13,11 @@ library(progress)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "test/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "test/abundance-table.Soil (non-saline).txt"
-graph_obj       <- "test/SpiecEasi-Soil (non-saline).graphml"
-taxonomy        <- "test/taxonomy-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-sub5k/abundance-table.Soil (non-saline).txt"
+taxonomy        <- "emp-soil-analysis-clean-sub5k/taxonomy-table.Soil (non-saline).txt"
 workdir         <- dirname(sample_map)
-filterTaxaPar   <- 300 
+# filterTaxaPar   <- 300 
 nbootstraps     <- 100
 
 
@@ -34,8 +33,31 @@ pb <- progress_bar$new(total = nbootstraps)
 rm(abundance_table, sample_map)
 gc()
 
-g <- read_graph(graph_obj, format = "graphml")
-g <- delete_edges(g, edges = which(E(g)$weight < 0))
+
+graph_obj = workdir |> 
+    list.files(pattern = "graphml", full.names = TRUE) |>
+    lapply(function(x) {
+        
+        g <- x |> read_graph(format = "graphml")
+        g <- g |> delete_edges( edges = which(E(g)$weight < 0))
+        
+        return(g)
+        
+    })
+
+names(graph_obj) = workdir |> 
+    list.files(pattern = "graphml", full.names = TRUE) |>
+    basename() |>
+    str_remove_all("SpiecEasi|graphml|-|\\.")
+
+ntaxa = graph_obj |> 
+    lapply(V) |> 
+    lapply(names) |>  
+    lapply(length) |> 
+    unlist() |> 
+    min() 
+
+ntaxa = (3 * ntaxa / 4) |> floor()
 
 centralities <- list()
 globalProps  <- list()
@@ -43,34 +65,38 @@ globalProps  <- list()
 
 for(b in seq_len(length.out = nbootstraps)) {
     
-    ntaxa = filterTaxaPar # sample(50:filterTaxaPar, 1)
+    # ntaxa = filterTaxaPar # sample(50:filterTaxaPar, 1)
     
     centralities_tmp <- list()
     globalProps_tmp  <- list()
     
-    for(i in unique(s0$ClimateZone)) {
+    for(i in names(graph_obj)) {
         
         s1 <- s0[which(ClimateZone == i), ]
         
-        mm <- df[, s1$SampleIDabv, with = FALSE] |>
-            setDF(rownames = df$TaxaIDabv) |>
-            rowSums() |>
-            sort(decreasing = TRUE)
+        # mm <- df[, s1$SampleIDabv, with = FALSE] |>
+        #     setDF(rownames = df$TaxaIDabv) |>
+        #     rowSums() |>
+        #     sort(decreasing = TRUE)
+        # 
+        # mm <- mm[which(mm != 0)] |>
+        #     names() |>
+        #     sample(size = ntaxa)
         
-        mm <- mm[which(mm != 0)] |>
-            names() |>
-            sample(size = ntaxa)
+        g_sub <- graph_obj[[i]]
         
-        g_sub <- subgraph(g, mm)
+        index = V(g_sub) |> names() |> sample(size = ntaxa)
+        
+        g_sub = g_sub |> subgraph(index)
         
         dt <- data.table(
             "ClimateZone" = i,
             "nTaxa"       = ntaxa,
-            "Taxa"        = mm,
-            "degree"      = numeric(length = length(mm)),
-            "between"     = numeric(length = length(mm)),
-            "close"       = numeric(length = length(mm)),
-            "eigenv"      = numeric(length = length(mm)) 
+            "Taxa"        = V(g_sub) |> names(),
+            "degree"      = numeric(length = ntaxa),
+            "between"     = numeric(length = ntaxa),
+            "close"       = numeric(length = ntaxa),
+            "eigenv"      = numeric(length = ntaxa) 
         )
         
         tmp <- degree(g_sub, normalized = TRUE)
