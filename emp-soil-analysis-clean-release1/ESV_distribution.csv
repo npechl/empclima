@@ -1,0 +1,20 @@
+"ClimateZone","Group","No of Samples","No of ESVs","Ratio"
+"Cfb","Temperate",1011,653,0.645895153313551
+"Cfa","Temperate",855,653,0.76374269005848
+"Dfa","Cold (continental)",709,653,0.921015514809591
+"Dfc","Cold (continental)",412,643,1.56067961165049
+"EF","Polar",156,413,2.6474358974359
+"Dwc","Cold (continental)",228,646,2.83333333333333
+"Af","Tropical",199,651,3.2713567839196
+"ET","Polar",137,579,4.22627737226277
+"Aw","Tropical",131,626,4.77862595419847
+"Am","Tropical",110,585,5.31818181818182
+"BSk","Arid",108,605,5.60185185185185
+"Csb","Temperate",71,649,9.14084507042254
+"Dfb","Cold (continental)",45,652,14.4888888888889
+"Cwb","Temperate",31,487,15.7096774193548
+"Csa","Temperate",14,244,17.4285714285714
+"BSh","Arid",24,475,19.7916666666667
+"BWk","Arid",7,194,27.7142857142857
+"Dwb","Cold (continental)",22,628,28.5454545454546
+"BWh","Arid",6,216,36
