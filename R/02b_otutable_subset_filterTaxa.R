@@ -9,14 +9,12 @@ library(rbiom)
 library(data.table)
 library(stringr)
 
-biom_name        <- "data-raw/emp_deblur_90bp.subset_5k.biom"
-sample_metadata  <- "emp-soil-analysis-clean-sub5k-v2/emp_qiime_mapping_subset_5k.tsv"
+biom_name        <- "data-raw/emp_deblur_90bp.qc_filtered.biom"
+sample_metadata  <- "emp-soil-analysis-clean-release1-v2/emp_qiime_mapping_qc_filtered.tsv"
 empo3_ontology   <- "Soil (non-saline)"
-abundance_thres  <- 1e-05
-prevalence_thres <- 0.10
+abundance_thres  <- 1e-04
+prevalence_thres <- 0.3
 workdir          <- dirname(sample_metadata)
-
-
 
 
 # import BIOM file ------------------------
@@ -112,6 +110,9 @@ fwrite(
     taxonomy_table, paste0(workdir, "/taxonomy-table.", empo3_ontology, ".txt"),
     row.names = FALSE, quote = FALSE, sep = "\t"
 )
+
+
+
 
 
 

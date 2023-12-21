@@ -18,7 +18,7 @@ library(paletteer)
 
 library(extrafont)
 
-a = fread("emp-soil-analysis-clean-sub5k/globalProps-bootstrap.txt")
+a = fread("emp-soil-analysis-clean-release1/globalProps-bootstrap.txt")
 
 an = fread("draft/Supplementary Table 1.csv")
 
@@ -46,18 +46,17 @@ a$variable = factor(
 gr1 = ggplot(data = a, aes(x = ClimateZone, y = value)) +
     
     stat_boxplot(
-        geom = 'errorbar', width = 0.25, color = "black", linewidth = .5
+        geom = 'errorbar', width = 0.25, color = "black", linewidth = .1
+    ) +
+    
+    geom_boxplot(
+        aes(fill = Group), outlier.shape = NA, linewidth = .1
     ) +
     
     geom_point(
         shape = 20, color = "grey10", fill = "grey10",
-        size = .75,
+        size = .5,
         position = position_jitternormal(sd_y = 0, sd_x = .05)
-    ) +
-    
-    geom_boxplot(
-        aes(fill = Group), alpha = .75,
-        outlier.shape = NA
     ) +
     
     geom_hline(data = a[, by = variable, .(value = mean(value))],
@@ -68,8 +67,8 @@ gr1 = ggplot(data = a, aes(x = ClimateZone, y = value)) +
         label = "p.signif", method = "wilcox.test", ref.group = ".all.", 
         hide.ns = TRUE,
         symnum.args = list(
-            cutpoints = c(0, 0.01, 0.05, Inf), 
-            symbols = c("**", "*", "ns")
+            cutpoints = c(0, 0.05, Inf), 
+            symbols = c("*", "ns")
         )
     ) +
     
@@ -82,7 +81,7 @@ gr1 = ggplot(data = a, aes(x = ClimateZone, y = value)) +
         )
     ) +
     
-    facet_wrap2(vars(variable), scales = "free_y", nrow = 2, axes = "all") +
+    facet_wrap2(vars(variable), scales = "free_y", nrow = 1, axes = "all") +
     
     theme_minimal(base_family = "Calibri") +
     
@@ -121,14 +120,14 @@ library(extrafont)
 
 library(ggsci)
 
-sample_map   <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
-taxa_map     <- "emp-soil-analysis-clean-sub5k/taxonomy-table.Soil (non-saline).txt"
-centralities <- "emp-soil-analysis-clean-sub5k/centralities-bootstrap.txt"
-hubs         <- "emp-soil-analysis-clean-sub5k/hubs-bootstrap.txt"
+sample_map   <- "emp-soil-analysis-clean-release1/sample-metadata.Soil (non-saline).txt"
+taxa_map     <- "emp-soil-analysis-clean-release1/taxonomy-table.Soil (non-saline).txt"
+centralities <- "emp-soil-analysis-clean-release1/centralities-bootstrap.txt"
+hubs         <- "emp-soil-analysis-clean-release1/hubs1.csv"
 tree         <- "data-raw/emp90.5000_1000_rxbl_placement_pruned75.tog.tre"
 workdir      <- dirname(sample_map)
 
-climate_info <- "climate-classification-info.csv"
+climate_info <- "draft/Supplementary Table 1.csv"
 
 
 df = fread(hubs)
@@ -183,6 +182,10 @@ x$label = paste0(
     str_remove(x$Taxa, "Taxa"), ")"
 )
 
+
+
+
+
 tree = read.tree(tree)
 
 to_drop = tree$tip.label[which(!(tree$tip.label %in% df$TaxaID))]
@@ -224,30 +227,32 @@ z2 = dcast(z, Taxa ~ ClimateZone, value.var = "value", fill = 0)
 z1 = setDF(z1[, 2:ncol(z1)], rownames = z1$Taxa)
 z2 = as.matrix(setDF(z2[, 2:ncol(z2)], rownames = z2$Taxa))
 
+
+
 ht = hclust(dist(t(z2), method = "euclidean"), method = "ward.D2")
 
 z1 = z1[, ht$labels[ht$order]]
 
 library(ggtree)
 
-p = ggtree(tree_reduced) + 
+p = ggtree(tree_reduced, linewidth = .1) + 
     
-    geom_tiplab(size = 3, family = "Calibri",
-                align = TRUE,
-                linetype = "dotted",
-                geom = "label",
-                label.size = NA,
-                hjust = 1,
-                offset = .15,
-                label.padding = unit(.1, "lines"),
-                linesize = 0.5) +
+    # geom_tiplab(size = 3, family = "Calibri",
+    #             align = TRUE,
+    #             linetype = "dotted",
+    #             geom = "label",
+    #             label.size = NA,
+    #             hjust = 1,
+    #             offset = .15,
+    #             label.padding = unit(.1, "lines"),
+    #             linesize = 0.5) +
     
     coord_cartesian(expand = TRUE, clip = "off")
 
 gr2 = gheatmap(p, z1, colnames = TRUE, width = 1.5,
               colnames_angle = 90,
               hjust = 1,
-              font.size = 3, offset = .15) +
+              font.size = 3) +
     
     scale_x_ggtree() +
     
@@ -274,6 +279,8 @@ gr2 = gheatmap(p, z1, colnames = TRUE, width = 1.5,
 rm(centralities, ht, p, tree, tree_reduced, x, z, z1, z2)
 rm(climate_info, hubs, i, index, sample_map, taxa_map, tmp, to_drop)
 
+
+
 # Figure 4C ----------------------------------------- 
 
 df$Taxa = NULL
@@ -299,12 +306,12 @@ df$value = paste0(
 
 length(
     unique(
-        df[which(Freq >= .5)]$value
+        df[which(Freq >= .15)]$value
     )
 )
 
 df$lbl = ifelse(
-    df$Freq >= .25, df$value, "Other"
+    df$Freq >= .15, df$value, "Other"
 )
 
 df = df[order(variable, -Freq), ]
@@ -340,7 +347,7 @@ gr3 = ggplot(data = df, aes(x = variable, y = Freq)) +
     scale_y_continuous(expand = c(0, 0), labels = scales::percent) +
     scale_x_discrete(expand = c(0, 0)) +
     
-    facet_wrap(vars(ClimateZone), ncol = 3) +
+    facet_wrap(vars(ClimateZone), ncol = 4) +
     
     theme_minimal(base_family = "Calibri") +
     
@@ -365,62 +372,62 @@ gr3 = ggplot(data = df, aes(x = variable, y = Freq)) +
 # Figure 4D --------------------------------------------------
 
 
-df = fread("emp-soil-analysis-clean-sub5k/negative.csv")
-
-x0 = df[which(level == "Kingdom")]
-
-x0$level = x0$from = x0$to = NULL
-
-x0 = melt(
-    x0, id.vars = "ClimateZone", 
-    value.factor = FALSE, variable.factor = FALSE
-)
-
-x0 = x0[order(ClimateZone, variable)]
-x0 = x0[, by = ClimateZone, ymax := cumsum(value)]
-
-x0 = x0[, by = ClimateZone, ymin := c(0, head(ymax, -1))]
-
-
-# Make the plot
-gr4 = ggplot(x0, 
-       aes(
-           ymax = ymax, ymin = ymin, 
-           xmax = 4, xmin = 3, 
-           fill = variable
-       )) +
-    
-    geom_rect() +
-    
-    scale_fill_manual(
-        values = c(
-            "Negative co-occurrence links" = "red3",
-            "Positive co-occurrence links" = "#1170AAFF"
-        ),
-        
-        guide = guide_legend(
-            label.theme = element_text(size = 11, family = "Calibri")
-        )
-    ) +
-    
-    # scale_fill_manual(values = paletteer_d("ggthemes::Color_Blind")) +
-    
-    coord_polar(theta = "y") +
-    
-    facet_wrap2(vars(ClimateZone), nrow = 1) +
-    
-    xlim(c(2, 4)) +
-    
-    theme_void(base_family = "Calibri") +
-    
-    theme(
-        strip.text = element_text(face = "bold", size = 11),
-        
-        legend.position = "bottom",
-        legend.justification = c(0, 1),
-        plot.tag = element_text(face = "bold"),
-        legend.title = element_blank()
-    )
+# df = fread("emp-soil-analysis-clean-sub5k/negative.csv")
+# 
+# x0 = df[which(level == "Kingdom")]
+# 
+# x0$level = x0$from = x0$to = NULL
+# 
+# x0 = melt(
+#     x0, id.vars = "ClimateZone", 
+#     value.factor = FALSE, variable.factor = FALSE
+# )
+# 
+# x0 = x0[order(ClimateZone, variable)]
+# x0 = x0[, by = ClimateZone, ymax := cumsum(value)]
+# 
+# x0 = x0[, by = ClimateZone, ymin := c(0, head(ymax, -1))]
+# 
+# 
+# # Make the plot
+# gr4 = ggplot(x0, 
+#        aes(
+#            ymax = ymax, ymin = ymin, 
+#            xmax = 4, xmin = 3, 
+#            fill = variable
+#        )) +
+#     
+#     geom_rect() +
+#     
+#     scale_fill_manual(
+#         values = c(
+#             "Negative co-occurrence links" = "red3",
+#             "Positive co-occurrence links" = "#1170AAFF"
+#         ),
+#         
+#         guide = guide_legend(
+#             label.theme = element_text(size = 11, family = "Calibri")
+#         )
+#     ) +
+#     
+#     # scale_fill_manual(values = paletteer_d("ggthemes::Color_Blind")) +
+#     
+#     coord_polar(theta = "y") +
+#     
+#     facet_wrap2(vars(ClimateZone), nrow = 1) +
+#     
+#     xlim(c(2, 4)) +
+#     
+#     theme_void(base_family = "Calibri") +
+#     
+#     theme(
+#         strip.text = element_text(face = "bold", size = 11),
+#         
+#         legend.position = "bottom",
+#         legend.justification = c(0, 1),
+#         plot.tag = element_text(face = "bold"),
+#         legend.title = element_blank()
+#     )
 
 
 # patchwork ================================

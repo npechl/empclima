@@ -12,8 +12,8 @@ library(igraph)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k/abundance-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-release1-v2/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-release1-v2/abundance-table.Soil (non-saline).txt"
 workdir         <- dirname(sample_map)
 
 
@@ -50,24 +50,25 @@ for(i in climatezones) {
     
     mm = mm[index, ]
     
-    mm = t(mm)
-    
-    nrep = ifelse(
-        nrow(mm) < 10, 5,
-        (s0[[i]]$SampleIDabv |> length() / 2) |> floor()
-    )
+    # nrep = ifelse(
+    #     nrow(mm) < 10, 5,
+    #     (s0[[i]]$SampleIDabv |> length() / 2) |> floor()
+    # )
     
     start = Sys.time()
     
     se.mb.emp <- spiec.easi(
-        data          = mm, 
+        data          = t(mm), 
         method        = 'mb', 
         sel.criterion = "bstars",
         pulsar.select = TRUE,
         lambda.min.ratio = .01,
-        pulsar.params = list(rep.num = nrep),
+        nlambda = 100,
+        
         verbose = FALSE
     )
+    
+    message(c("stability = ", getStability(se.mb.emp), "\t"), appendLF = FALSE)
     
     end = Sys.time()
     
@@ -79,7 +80,7 @@ for(i in climatezones) {
     ## Create igraph objects
     ig.mb.emp <- adj2igraph(
         symBeta(getOptBeta(se.mb.emp), mode = 'maxabs'),
-        vertex.attr = list(name = colnames(mm))
+        vertex.attr = list(name = colnames(t(mm)))
     )
     
     rm(mm, start, end)

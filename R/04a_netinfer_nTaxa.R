@@ -15,8 +15,8 @@ library(stringr)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub5k-v2/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k-v2/abundance-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-release1-v2/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-release1-v2/abundance-table.Soil (non-saline).txt"
 workdir         <- dirname(sample_map)
 
 
@@ -56,7 +56,7 @@ stats$Ratio = stats$`No of ESVs` / stats$`No of Samples`
 stats = stats[order(Ratio), ]
 
 fwrite(
-    stats, paste0(workdir, "/ESVdistribution.csv"),
+    stats, paste0(workdir, "/ESV_distribution.csv"),
     row.names = FALSE, quote = TRUE, sep = ","
 )
 

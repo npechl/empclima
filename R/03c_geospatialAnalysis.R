@@ -14,8 +14,8 @@ library(vegan)
 # library(ggplot2)
 # library(extrafont)
 
-sample_map      <- "emp-soil-analysis-clean-sub5k-v2/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k-v2/abundance-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-sub10k/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-sub10k/abundance-table.Soil (non-saline).txt"
 workdir         <- dirname(sample_map)
 
 s0 = fread(sample_map)

@@ -13,10 +13,10 @@ library(ggplot2)
 library(extrafont)
 library(rbiom)
 
-df = fread("emp-soil-analysis-clean-sub5k/prevalence.csv")
+df = fread("emp-soil-analysis-clean-release1-v2/prevalence.csv")
 
-s  = fread("emp-soil-analysis-clean-sub5k/emp_qiime_mapping_subset_5k.tsv")
-m  = read.biom(src = "data-raw/emp_deblur_90bp.subset_5k.biom", tree = FALSE)
+s  = fread("emp-soil-analysis-clean-release1-v2/emp_qiime_mapping_qc_filtered.tsv")
+m  = read.biom(src = "data-raw/emp_deblur_90bp.qc_filtered.biom", tree = FALSE)
 
 s = s[which(empo_3 == "Soil (non-saline)")]
 
@@ -91,12 +91,12 @@ gr1 = ggplot(data = df, aes(x = `No. of Samples`, y = `No. of ESVs`)) +
 
 # Fig. 1 B =============================================
 
-df = fread("emp-soil-analysis-clean-sub5k/ESVdistribution.csv")
+df = fread("emp-soil-analysis-clean-release1-v2/ESV_distribution.csv")
 
-s = fread("Supplementary Table 1.csv")
-
-
-df = merge(df, s, by.x = "ClimateZone", by.y = "Code")
+# s = fread("draft/Supplementary Table 1.csv")
+# 
+# 
+# df = merge(df, s, by.x = "ClimateZone", by.y = "Code")
 
 
 library(ggrepel)
@@ -104,10 +104,10 @@ library(ggforce)
 library(paletteer)
 library(extrafont)
 
-gr2 = ggplot(data = df, aes(x = Group, y = `No of Samples`)) +
+gr2 = ggplot(data = df, aes(x = `No of Samples`, y = `No of ESVs`)) +
     
     geom_point(
-        aes(size = `No of ESVs`, fill = Group),
+        aes(size = Ratio, fill = Group),
         shape = 21, color = "grey10", stroke = .25
     ) +
     
@@ -120,9 +120,8 @@ gr2 = ggplot(data = df, aes(x = Group, y = `No of Samples`)) +
         fontface = "bold", family = "Calibri"
     ) +
     
-    scale_y_continuous(
-        trans = "log2",
-        breaks = c(8, 12, 16, 24, 32, 48, 64)
+    scale_x_continuous(
+        trans = "log2"
     ) +
     
     scale_fill_manual(
@@ -139,17 +138,17 @@ gr2 = ggplot(data = df, aes(x = Group, y = `No of Samples`)) +
     theme(
         legend.position = "right",
         
-        axis.title.x = element_blank(),
-        
         axis.text = element_text(size = 11),
-        axis.title.y = element_text(size = 11),
+        axis.title = element_text(size = 11),
         
         panel.grid.minor = element_blank(),
         panel.grid.major = element_line(linewidth = .3, linetype = "dashed"),
         
         panel.border = element_rect(fill = NA, linewidth = .3),
         axis.ticks = element_line(linewidth = .3)
-    )
+    ) + 
+    
+    labs(size = "No. of ESVs / No. of Samples")
     
     
 
@@ -174,7 +173,7 @@ library(raster)
 # library(rgeos)
 # library(sf)
 
-sample_metadata        <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
+sample_metadata        <- "emp-soil-analysis-clean-release1-v2/sample-metadata.Soil (non-saline).txt"
 climate_classification <- "Beck_KG_V1/Beck_KG_V1_present_0p5.tif"
 climate_info           <- "Beck_KG_V1/classification.txt"
 workdir                <- dirname(sample_metadata)
@@ -211,7 +210,7 @@ gr3 = ggplot() +
     
     geom_point(
         data = df, aes(x = longitude_deg, y = latitude_deg),
-        shape = 21, stroke = .25, size = 1.5,
+        shape = 21, stroke = .1, size = 1.5,
         fill = "black", color = "white"
     ) +
     
@@ -268,11 +267,16 @@ library(patchwork)
 
 multi = (gr1 | gr2) / gr3 + 
     
-    plot_layout(heights = c(1, 1.5))
+    plot_layout(heights = c(1, 1)) +
+    
+    plot_annotation(
+        tag_levels = "A", 
+        theme = theme(plot.tag = element_text(size = 11, face = "bold", family = "Calibri"))
+    )
 
 ggsave(
     plot = multi, filename = "Fig1.pdf", device = cairo_pdf,
-    width = 12, height = 10, units = "in"
+    width = 12, height = 12, units = "in"
 )
 
 # ggsave(

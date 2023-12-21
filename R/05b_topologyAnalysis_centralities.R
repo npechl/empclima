@@ -22,9 +22,9 @@ library(rstatix)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub5k-v2/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k-v2/abundance-table.Soil (non-saline).txt"
-centralites     <- "emp-soil-analysis-clean-sub5k-v2/centralities-bootstrap.txt"
+sample_map      <- "emp-soil-analysis-clean-release1/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-release1/abundance-table.Soil (non-saline).txt"
+centralites     <- "emp-soil-analysis-clean-release1/centralities-bootstrap.txt"
 workdir         <- dirname(centralites)
 climate_info    <- "draft/Supplementary Table 1.csv"
 
@@ -53,6 +53,9 @@ df[which(Order == ""), ]$Order     = "unassigned"
 df[which(Family == ""), ]$Family   = "unassigned"
 df[which(Genus == ""), ]$Genus     = "unassigned"
 df[which(Species == ""), ]$Species = "unassigned"
+
+
+
 
 
 stats = list()

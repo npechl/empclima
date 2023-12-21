@@ -7,8 +7,8 @@ gc()
 library(data.table)
 library(stringr)
 
-sample_metadata <- "emp-soil-analysis-clean-sub5k-v2/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k-v2/abundance-table.Soil (non-saline).txt"
+sample_metadata <- "emp-soil-analysis-clean-release1-v2/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-release1-v2/abundance-table.Soil (non-saline).txt"
 workdir         <- dirname(sample_metadata)
 
 
@@ -29,11 +29,11 @@ sam0 <- fread(sample_metadata)
     sam0 = sam0[which(sam0$`#SampleID` %in% keep), ]
     
     
-    # Filter 2; at least 3 samples per climate zones ----------------
+    # Filter 2; at least 5 samples per climate zones ----------------
     
     sam0[, by = ClimateZone, N_climatezone := .N]
     
-    sam0 = sam0[which(N_climatezone >= 3), ]
+    sam0 = sam0[which(N_climatezone >= 5), ]
     
     sam0$N_climatezone = NULL
     

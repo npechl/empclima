@@ -16,8 +16,8 @@ library(paletteer)
 
 # Fig. 2 A =============================================
 
-s0 = fread("emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt")
-x  = fread("emp-soil-analysis-clean-sub5k/diversity1.csv")
+s0 = fread("emp-soil-analysis-clean-release1-v2/sample-metadata.Soil (non-saline).txt")
+x  = fread("emp-soil-analysis-clean-release1-v2/diversity1.csv")
 
 x = x[which(x$p.adj <= 0.05), ]
 
@@ -51,14 +51,14 @@ gr1 = ggplot(data = s0,
 
     stat_boxplot(geom = 'errorbar', width = 0.25, color = "black", linewidth = .5) +
 
-    geom_boxplot(aes(fill = Group.x), color = "black",
-                 outlier.shape = NA, width = .5, linewidth = .5) +
+    geom_boxplot(aes(fill = Group), color = "black",
+                 outlier.shape = NA, width = .5, linewidth = .25) +
 
     geom_point(
         # aes(fill = Group),
         fill = "grey10", color = "black",
         shape = 21, size = 1.5, stroke = .1,
-        position = position_jitternormal(sd_y = 0, sd_x = .04)
+        position = position_jitternormal(sd_y = 0, sd_x = .02)
     ) +
     
     geom_hline(yintercept = mean(s0$shannon), linetype = 2, linewidth = 1, color = "yellow3") +
@@ -118,10 +118,14 @@ library(ggh4x)
 library(patchwork)
 
 
+s0 = fread("emp-soil-analysis-clean-sub10k/sample-metadata.Soil (non-saline).txt")
+
 a = ggplot(data = s0, aes(x = MDS1, y = MDS2)) +
+    
+    geom_hdr(aes(fill = Group), show.legend = FALSE) +
 
     geom_point(
-        aes(fill = Group.x),
+        aes(fill = Group),
         color = "white",
         stroke = .25, shape = 21, size = 2
     ) +
@@ -174,10 +178,10 @@ a = ggplot(data = s0, aes(x = MDS1, y = MDS2)) +
 
 b = ggplot(data = s0, aes(x = MDS1, y = MDS2)) +
 
-    geom_hdr(aes(fill = Group.x), show.legend = FALSE) +
+    geom_hdr(aes(fill = Group), show.legend = FALSE) +
 
     geom_point(
-        aes(fill = Group.x),
+        aes(fill = Group),
         color = "white",
         stroke = .25, shape = 21, size = 2
     ) +
@@ -195,7 +199,7 @@ b = ggplot(data = s0, aes(x = MDS1, y = MDS2)) +
 
     coord_cartesian(expand = TRUE, clip = "on") +
 
-    facet_wrap2(vars(ClimateZone), nrow = 3, axes = "all") +
+    facet_wrap2(vars(Group), nrow = 1, axes = "all") +
 
     theme_minimal(base_family = "Calibri") +
 
@@ -226,7 +230,7 @@ b = ggplot(data = s0, aes(x = MDS1, y = MDS2)) +
 
 # Fig. 2 C =============================================
 
-prs = fread("emp-soil-analysis-clean-sub5k/geospatial-plot.txt")
+prs = fread("emp-soil-analysis-clean-sub10k/geospatial-plot.txt")
 
 prs$BrayCurtis = 1 - prs$BrayCurtis
 
@@ -285,7 +289,7 @@ multi = wrap_plots(my, b, ncol = 1) +
     
     plot_annotation(tag_levels = 'A') +
     
-    plot_layout(guides = 'collect') &
+    plot_layout(guides = 'collect', heights = c(2, 1)) &
     
     theme(
         legend.position = "bottom",
@@ -297,7 +301,7 @@ multi = wrap_plots(my, b, ncol = 1) +
 
 ggsave(
     plot = multi, filename = "Fig2.pdf", device = cairo_pdf,
-    width = 12, height = 12, units = "in"
+    width = 14, height = 12, units = "in"
 )
 
 

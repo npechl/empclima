@@ -9,10 +9,12 @@ options(timeout = 3600)
 ftp_site <- "http://ftp.microbio.me/emp/release1/"
 
 
-output_folder <- "data-raw-test"
+output_folder <- "data-raw"
 
 dir.create(output_folder, showWarnings = FALSE)
 
+
+# subset 2k -----------------------------
 
 download.file(
     
@@ -30,45 +32,6 @@ download.file(
 download.file(
     
     url = paste0(
-        ftp_site, "mapping_files/", "emp_qiime_mapping_subset_5k.tsv"
-    ),
-    
-    method = "curl",
-    
-    destfile = paste0(output_folder, "/emp_qiime_mapping_subset_5k.tsv")
-    
-)
-
-
-download.file(
-    
-    url = paste0(
-        ftp_site, "mapping_files/", "emp_qiime_mapping_subset_10k.tsv"
-    ),
-    
-    method = "curl",
-    
-    destfile = paste0(output_folder, "/emp_qiime_mapping_subset_10k.tsv")
-    
-)
-
-
-download.file(
-    
-    url = paste0(
-        ftp_site, "mapping_files/", "emp_qiime_mapping_subset_10k.tsv"
-    ),
-    
-    method = "curl",
-    
-    destfile = paste0(output_folder, "/emp_qiime_mapping_subset_10k.tsv")
-    
-)
-
-
-download.file(
-    
-    url = paste0(
         ftp_site, "otu_tables/deblur/", "emp_deblur_90bp.subset_2k.biom"
     ),
     
@@ -79,6 +42,20 @@ download.file(
 )
 
 
+# subset 5k --------------------------------------
+
+download.file(
+    
+    url = paste0(
+        ftp_site, "mapping_files/", "emp_qiime_mapping_subset_5k.tsv"
+    ),
+    
+    method = "curl",
+    
+    destfile = paste0(output_folder, "/emp_qiime_mapping_subset_5k.tsv")
+    
+)
+
 download.file(
     
     url = paste0(
@@ -88,6 +65,20 @@ download.file(
     method = "curl",
     
     destfile = paste0(output_folder, "/emp_deblur_90bp.subset_5k.biom")
+    
+)
+
+# subset 10k ------------------------------------
+
+download.file(
+    
+    url = paste0(
+        ftp_site, "mapping_files/", "emp_qiime_mapping_subset_10k.tsv"
+    ),
+    
+    method = "curl",
+    
+    destfile = paste0(output_folder, "/emp_qiime_mapping_subset_10k.tsv")
     
 )
 
@@ -102,6 +93,41 @@ download.file(
     destfile = paste0(output_folder, "/emp_deblur_90bp.subset_10k.biom")
     
 )
+
+# subset emp release 1 ----------------------------
+
+download.file(
+    
+    url = paste0(
+        ftp_site, "mapping_files/", "emp_qiime_mapping_qc_filtered.tsv"
+    ),
+    
+    method = "curl",
+    
+    destfile = paste0(output_folder, "/emp_qiime_mapping_qc_filtered.tsv")
+    
+)
+
+download.file(
+    
+    url = paste0(
+        ftp_site, "otu_tables/deblur/", "emp_deblur_90bp.qc_filtered.biom"
+    ),
+    
+    method = "curl",
+    
+    destfile = paste0(output_folder, "/emp_deblur_90bp.qc_filtered.biom")
+    
+)
+
+
+
+
+
+
+
+
+
 
 
 

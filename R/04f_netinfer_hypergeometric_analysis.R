@@ -15,11 +15,11 @@ library(progress)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k/abundance-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-release1-v2/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-release1-v2/abundance-table.Soil (non-saline).txt"
 # graph_obj       <- "emp-soil-analysis-clean-sub5k-v2/SpiecEasi-Soil (non-saline).graphml"
-taxa_map        <- "emp-soil-analysis-clean-sub5k/taxonomy-table.Soil (non-saline).txt"
-centralities    <- "emp-soil-analysis-clean-sub5k/centralities-bootstrap.txt"
+taxa_map        <- "emp-soil-analysis-clean-release1-v2/taxonomy-table.Soil (non-saline).txt"
+centralities    <- "emp-soil-analysis-clean-release1-v2/centralities-bootstrap.txt"
 workdir         <- dirname(sample_map)
 
 
@@ -196,5 +196,29 @@ fwrite(
     df, paste0(workdir, "/hypergeometric1.csv"),
     row.names = FALSE, quote = TRUE, sep = ","
 )
+
+
+df = df[which(p.adj <= .05)]
+
+# df$link = paste0(df$from, " - ", df$to)
+
+df2 = df[, by = .(level, from, to), .(
+    `No. of climate zones` = ClimateZone |> unique() |> length(),
+    `Climate zones` = ClimateZone |> unique() |> sort() |> paste(collapse = "/")
+)]
+
+
+df2 = df2[order(level, from, `Climate zones`)]
+
+fwrite(
+    df2, paste0(workdir, "/hypergeometric2.csv"),
+    row.names = FALSE, quote = TRUE, sep = ","
+)
+
+
+
+
+
+
 
 

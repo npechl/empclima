@@ -7,18 +7,10 @@ gc()
 library(data.table)
 library(stringr)
 
-# library(ggplot2)
-# library(ggsci)
-# library(ggh4x)
-# 
-# library(extrafont)
-# 
-# library(ggplotify)
-
 
 # list of inputs ------------------------------------
 
-globalProps  <- "emp-soil-analysis-clean-sub5k/globalProps-bootstrap.txt"
+globalProps  <- "emp-soil-analysis-clean-release1/globalProps-bootstrap.txt"
 climate_info <- "draft/Supplementary Table 1.csv"
 workdir      <- dirname(globalProps)
 
@@ -44,23 +36,13 @@ for(i in index) {
 
 df = df[order(Run), ]
 
-
-
 df$nTaxa = NULL
-# df$Run = NULL
 
 df = melt(
     df, id.vars = c("ClimateZone", "Description", "Group", 
                     "Precipitation Type", "Level of Heat", "Run"), 
     variable.factor = FALSE, value.factor = FALSE
 )
-
-
-ggplot(data = df, aes(x = ClimateZone, y = value)) +
-    
-    geom_boxplot() +
-    
-    facet_wrap(vars(variable), scales = "free_y")
 
 # 
 # gr = ggplot(data = df, aes(x = ClimateZone, y = value)) +
@@ -113,7 +95,7 @@ ggplot(data = df, aes(x = ClimateZone, y = value)) +
 
 library(rstatix)
 
-wilc_stats <- df |>
+wilc_stats <- df[which(variable != "Transitivity")] |>
     group_by(variable) |>
     pairwise_wilcox_test(value ~ ClimateZone, p.adjust.method = "fdr") |>
     setDT()

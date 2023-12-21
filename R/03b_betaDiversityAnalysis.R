@@ -13,8 +13,8 @@ library(vegan)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub5k-v2/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k-v2/abundance-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-release1/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-release1/abundance-table.Soil (non-saline).txt"
 workdir         <- dirname(sample_map)
 
 s0 = fread(sample_map)

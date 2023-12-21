@@ -16,15 +16,12 @@ library(extrafont)
 
 library(patchwork)
 
-biom_name       <- "data-raw/emp_deblur_90bp.subset_5k.biom"
-sample_metadata <- "emp-soil-analysis-clean-sub5k-v2/emp_qiime_mapping_subset_5k.tsv"
+biom_name       <- "data-raw/emp_deblur_90bp.qc_filtered.biom"
+sample_metadata <- "emp-soil-analysis-clean-release1-v2/emp_qiime_mapping_qc_filtered.tsv"
 empo3_ontology  <- "Soil (non-saline)"
-prevalence      <- .1
+prevalence      <- .3
 
 workdir         <- dirname(sample_metadata)
-
-
-
 
 # import BIOM file ------------------------
 
@@ -40,7 +37,7 @@ sam0 <- fread(sample_metadata)
 
     subset <- select(obs0, samples = sample.subset)
 
-    # filter in presence in at least 10% of samples -----------
+    # filter in presence in at least 30% of samples -----------
 
     abundance <- counts(subset)
 

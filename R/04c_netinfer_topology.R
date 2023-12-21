@@ -9,13 +9,13 @@ library(stringr)
 library(igraph)
 
 # library(ggplot2)
-library(ggnetwork)
+# library(ggnetwork)
 # library(extrafont)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k/abundance-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-release1-v2/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-release1-v2/abundance-table.Soil (non-saline).txt"
 # graph_obj       <- "emp-soil-analysis-clean-sub5k"
 workdir         <- dirname(sample_map)
 
@@ -28,6 +28,7 @@ gc()
 
 net_spieceasi_fls <- workdir |> 
     list.files(pattern = "graphml", full.names = TRUE)
+
 # net_spieceasi <- read_graph(graph_obj, format = "graphml") 
 # E(net_spieceasi)$weight = ifelse(E(net_spieceasi)$weight < 0, 0, E(net_spieceasi)$weight)
 
@@ -72,7 +73,7 @@ for(i in net_spieceasi_fls) {
         ) |>
         merge(net_degree, by.x = "TaxaIDabv", by.y = "Taxa")
     
-    cor.test(x = df2$value, y = df2$k)
+    # cor.test(x = df2$value, y = df2$k)
     
     abund_degree[[zone]] = df2
 
@@ -82,6 +83,8 @@ for(i in net_spieceasi_fls) {
 abund_degree = abund_degree |> rbindlist(idcol = "Climate zone")
 ve_counts    = ve_counts |> rbindlist(idcol = "Climate zone")
 
+ve_counts$Ratio = ve_counts$`No. of edges` / ve_counts$`No. of nodes`
+
 
 fwrite(
     abund_degree, paste0(workdir, "/abundance-degree.txt"),
@@ -89,57 +92,96 @@ fwrite(
 )
 
 fwrite(
-    ve_counts, paste0(workdir, "/nodes-edges.txt"),
-    row.names = FALSE, quote = FALSE, sep = "\t"
+    ve_counts, paste0(workdir, "/nodes-edges-counts.csv"),
+    row.names = FALSE, quote = TRUE, sep = ","
 )
 
 
-gr <- ggplot(data = abund_degree[which(value != 0)], aes(x = k, y = value)) +
+net_stats1 = abund_degree |>
+    split(abund_degree$`Climate zone`) |>
+    lapply(function(x) {
+        
+        z = cor.test(x$value, x$k)
+        
+        return(
+            data.table(
+                "cor"     = round(z$estimate, digits = 4),
+                "p.value" = z$p.value
+            )
+        )
+    }) |>
+    
+    rbindlist(idcol = "Climate zone")
 
-    geom_point(
-        shape = 21, size = 1.5, stroke = 0,
-        fill = alpha("grey10", alpha = .1), color = "grey95"
-    ) +
-
-    theme_minimal(base_family = "Calibri") +
-
-    scale_y_continuous(labels = scales::percent, trans = "log10") +
-
-    theme(
-        panel.border = element_rect(linewidth = .3, fill = NA),
-
-        axis.ticks = element_line(linewidth = .3),
-
-        plot.margin = margin(20, 20, 20, 20)
-    ) +
-
-    labs(
-        y = "Relative abundance"
-    )
-
-ggsave(
-    plot = gr, filename = paste0(workdir, "/degree-abundance.jpeg"),
-    width = 10, height = 10, units = "in", dpi = 600
-)
+net_stats1$p.adj = p.adjust(net_stats1$p.value, "fdr")
 
 
+net_degree    <- abund_degree[, by = .(`Climate zone`, k), .N]
+net_degree$k2 <- net_degree$k ^ 2
+net_degree$k3 <- net_degree$k ^ 3
+net_degree$k4 <- net_degree$k ^ 4
+
+net_stats2 = net_degree |>
+    split(net_degree$`Climate zone`) |>
+    lapply(function(x) {
+        
+        model <- lm(N ~ k + k2 + k3 + k4, data = x)
+        
+        z = summary(model)
+        
+        f <- z$fstatistic
+        p <- pf(f[1],f[2],f[3],lower.tail=F)
+        attributes(p) <- NULL
+        
+        return(
+            data.table(
+                "adj.r.squared" = z$adj.r.squared,
+                "p.value"       = p
+            )
+        )
+        
+    }) |>
+    
+    rbindlist(idcol = "Climate zone")
+
+net_stats2$p.adj = p.adjust(net_stats2$p.value, "fdr")
 
 
-
-# net_degree    <- net_degree[, by = k, .N]
-# net_degree$k2 <- net_degree$k ^ 2
-# net_degree$k3 <- net_degree$k ^ 3
-# net_degree$k4 <- net_degree$k ^ 4
+# gr <- ggplot(data = abund_degree[which(value != 0)], aes(x = k, y = value)) +
 # 
-# model <- lm(N ~ k + k2 + k3 + k4, data = net_degree)
+#     geom_point(
+#         shape = 21, size = 1.5, stroke = 0,
+#         fill = alpha("grey10", alpha = .1), color = "grey95"
+#     ) +
 # 
-# summary(model)
+#     theme_minimal(base_family = "Calibri") +
+# 
+#     scale_y_continuous(labels = scales::percent, trans = "log10") +
+# 
+#     theme(
+#         panel.border = element_rect(linewidth = .3, fill = NA),
+# 
+#         axis.ticks = element_line(linewidth = .3),
+# 
+#         plot.margin = margin(20, 20, 20, 20)
+#     ) +
+# 
+#     labs(
+#         y = "Relative abundance"
+#     )
+# 
+# ggsave(
+#     plot = gr, filename = paste0(workdir, "/degree-abundance.jpeg"),
+#     width = 10, height = 10, units = "in", dpi = 600
+# )
+#
 
+#
 # fwrite(
 #     net_degree, "degree-distribution.txt",
 #     row.names = FALSE, quote = FALSE, sep = "\t"
 # )
-
+#
 # library(extrafont)
 # 
 # ggplot(data = net_degree, aes(x = k, y = N)) +

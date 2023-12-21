@@ -14,10 +14,10 @@ library(stringr)
 # 
 # library(ggsci)
 
-sample_map   <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
+sample_map   <- "emp-soil-analysis-clean-release1-v2/sample-metadata.Soil (non-saline).txt"
 # taxa_map     <- "emp-soil-analysis-clean-sub5k/taxonomy-table.Soil (non-saline).txt"
-centralities <- "emp-soil-analysis-clean-sub5k/centralities-bootstrap.txt"
-hubs         <- "emp-soil-analysis-clean-sub5k/hubs-bootstrap.txt"
+centralities <- "emp-soil-analysis-clean-release1-v2/centralities-bootstrap.txt"
+hubs         <- "emp-soil-analysis-clean-release1-v2/hubs1.csv"
 workdir      <- dirname(sample_map)
 
 climate_info    <- "draft/Supplementary Table 1.csv"
@@ -91,7 +91,7 @@ hubs$key = paste(
 
 centralities = centralities[, by = key, .(
     n1 = length(unique(ClimateZone)),
-    `PresentIn` = paste(sort(unique(ClimateZone)), collapse = ", ")
+    `PresentIn` = paste(sort(unique(ClimateZone)), collapse = "/")
 )]
 
 
@@ -102,7 +102,7 @@ hubs = merge(hubs, centralities, by = "key", all.x = TRUE)
 
 hubs2 = hubs[, by = .(key), .(
     n2 = length(ClimateZone),
-    `PresentIn (as Hub)` = paste(sort(ClimateZone), collapse = "+")
+    `PresentIn (as Hub)` = paste(sort(ClimateZone), collapse = "/")
 )]
 
 hubs = merge(hubs, hubs2, by = "key")
@@ -117,7 +117,7 @@ hubs$level = factor(
 hubs = hubs[order(ClimateZone, level, -Freq), ]
 
 fwrite(
-    hubs, paste0(workdir, "/hubs.csv"),
+    hubs, paste0(workdir, "/hubs2.csv"),
     row.names = FALSE, quote = TRUE, sep = ","
 )
 

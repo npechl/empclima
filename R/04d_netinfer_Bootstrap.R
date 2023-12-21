@@ -13,9 +13,9 @@ library(progress)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-sub5k/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-sub5k/abundance-table.Soil (non-saline).txt"
-taxonomy        <- "emp-soil-analysis-clean-sub5k/taxonomy-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-release1-v2/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-release1-v2/abundance-table.Soil (non-saline).txt"
+taxonomy        <- "emp-soil-analysis-clean-release1-v2/taxonomy-table.Soil (non-saline).txt"
 workdir         <- dirname(sample_map)
 # filterTaxaPar   <- 300 
 nbootstraps     <- 100
@@ -148,19 +148,35 @@ centralities <- centralities[, by = .(ClimateZone, nTaxa, Taxa), .(
 )]
 
 
+# hub nodes --------------------------------
+
+# hubs = graph_obj |>
+#     lapply(function(x) {
+#         
+#         deg <- degree(x, normalized = TRUE)
+#         eig <- eigen_centrality(x)$vector
+#         
+#         index = ((deg >= quantile(deg, .95)) & (eig >= quantile(eig, .95))) |>
+#             which() |>
+#             names()
+#         
+#         
+#         return(data.table("Taxa" = index))
+#         
+#     }) |>
+#     rbindlist(idcol = "ClimateZone")
+
 hubs = split(centralities, centralities$ClimateZone)
 
 for(i in names(hubs)) {
-    
+
     tmp = hubs[[i]]
-    
-    tmp = tmp[which(
-        degree >= quantile(tmp$degree, probs = 0.95) &
-            eigenv >= quantile(tmp$eigenv, probs = 0.95)
-    )]
-    
+
+    tmp = tmp[which(degree >= quantile(tmp$degree, probs = 0.95))]
+    # tmp = tmp[which(eigenv >= quantile(tmp$eigenv, probs = 0.95))]
+
     tmp = tmp[, c("ClimateZone", "Taxa"), with = FALSE]
-    
+
     hubs[[i]] = tmp
 }
 
@@ -173,8 +189,8 @@ hubs$TaxaID         = NULL
 centralities$TaxaID = NULL
 
 fwrite(
-    hubs, paste0(workdir, "/hubs-bootstrap.txt"),
-    row.names = FALSE, quote = FALSE, sep = "\t"
+    hubs, paste0(workdir, "/hubs1.csv"),
+    row.names = FALSE, quote = TRUE, sep = ","
 )
 
 fwrite(
