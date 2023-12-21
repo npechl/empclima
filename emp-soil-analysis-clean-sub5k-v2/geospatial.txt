@@ -1,5 +1,0 @@
-call = mantel(xdis = dist.abund, ydis = dist.geo, method = "spearman", permutations = 999, na.rm = TRUE)
-method = Spearman's rank correlation rho
-statistic = 0.237241343780852
-signif = 0.001
-permutations = 999
