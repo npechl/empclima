@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns
+         http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+<!-- Created by igraph -->
+  <key id="v_name" for="node" attr.name="name" attr.type="string"/>
+  <key id="e_weight" for="edge" attr.name="weight" attr.type="double"/>
+  <graph id="G" edgedefault="undirected">
+    <node id="n0">
+      <data key="v_name">Taxa3</data>
+    </node>
+    <node id="n1">
+      <data key="v_name">Taxa6</data>
+    </node>
+    <node id="n2">
+      <data key="v_name">Taxa13</data>
+    </node>
+    <node id="n3">
+      <data key="v_name">Taxa14</data>
+    </node>
+    <node id="n4">
+      <data key="v_name">Taxa23</data>
+    </node>
+    <node id="n5">
+      <data key="v_name">Taxa31</data>
+    </node>
+    <node id="n6">
+      <data key="v_name">Taxa33</data>
+    </node>
+    <node id="n7">
+      <data key="v_name">Taxa37</data>
+    </node>
+    <node id="n8">
+      <data key="v_name">Taxa40</data>
+    </node>
+    <node id="n9">
+      <data key="v_name">Taxa49</data>
+    </node>
+    <node id="n10">
+      <data key="v_name">Taxa51</data>
+    </node>
+    <node id="n11">
+      <data key="v_name">Taxa58</data>
+    </node>
+    <node id="n12">
+      <data key="v_name">Taxa59</data>
+    </node>
+    <node id="n13">
+      <data key="v_name">Taxa60</data>
+    </node>
+    <node id="n14">
+      <data key="v_name">Taxa64</data>
+    </node>
+    <node id="n15">
+      <data key="v_name">Taxa69</data>
+    </node>
+    <node id="n16">
+      <data key="v_name">Taxa74</data>
+    </node>
+    <node id="n17">
+      <data key="v_name">Taxa75</data>
+    </node>
+    <node id="n18">
+      <data key="v_name">Taxa78</data>
+    </node>
+    <node id="n19">
+      <data key="v_name">Taxa86</data>
+    </node>
+    <node id="n20">
+      <data key="v_name">Taxa87</data>
+    </node>
+    <node id="n21">
+      <data key="v_name">Taxa89</data>
+    </node>
+    <node id="n22">
+      <data key="v_name">Taxa93</data>
+    </node>
+    <node id="n23">
+      <data key="v_name">Taxa101</data>
+    </node>
+    <node id="n24">
+      <data key="v_name">Taxa104</data>
+    </node>
+    <node id="n25">
+      <data key="v_name">Taxa105</data>
+    </node>
+    <node id="n26">
+      <data key="v_name">Taxa112</data>
+    </node>
+    <node id="n27">
+      <data key="v_name">Taxa118</data>
+    </node>
+    <node id="n28">
+      <data key="v_name">Taxa121</data>
+    </node>
+    <node id="n29">
+      <data key="v_name">Taxa124</data>
+    </node>
+    <node id="n30">
+      <data key="v_name">Taxa129</data>
+    </node>
+    <node id="n31">
+      <data key="v_name">Taxa132</data>
+    </node>
+    <node id="n32">
+      <data key="v_name">Taxa133</data>
+    </node>
+    <node id="n33">
+      <data key="v_name">Taxa135</data>
+    </node>
+    <node id="n34">
+      <data key="v_name">Taxa137</data>
+    </node>
+    <node id="n35">
+      <data key="v_name">Taxa139</data>
+    </node>
+    <node id="n36">
+      <data key="v_name">Taxa140</data>
+    </node>
+    <node id="n37">
+      <data key="v_name">Taxa142</data>
+    </node>
+    <node id="n38">
+      <data key="v_name">Taxa143</data>
+    </node>
+    <node id="n39">
+      <data key="v_name">Taxa145</data>
+    </node>
+    <node id="n40">
+      <data key="v_name">Taxa152</data>
+    </node>
+    <node id="n41">
+      <data key="v_name">Taxa154</data>
+    </node>
+    <node id="n42">
+      <data key="v_name">Taxa155</data>
+    </node>
+    <node id="n43">
+      <data key="v_name">Taxa156</data>
+    </node>
+    <node id="n44">
+      <data key="v_name">Taxa157</data>
+    </node>
+    <node id="n45">
+      <data key="v_name">Taxa160</data>
+    </node>
+    <node id="n46">
+      <data key="v_name">Taxa162</data>
+    </node>
+    <node id="n47">
+      <data key="v_name">Taxa163</data>
+    </node>
+    <node id="n48">
+      <data key="v_name">Taxa166</data>
+    </node>
+    <node id="n49">
+      <data key="v_name">Taxa168</data>
+    </node>
+    <node id="n50">
+      <data key="v_name">Taxa171</data>
+    </node>
+    <node id="n51">
+      <data key="v_name">Taxa178</data>
+    </node>
+    <node id="n52">
+      <data key="v_name">Taxa179</data>
+    </node>
+    <node id="n53">
+      <data key="v_name">Taxa180</data>
+    </node>
+    <node id="n54">
+      <data key="v_name">Taxa183</data>
+    </node>
+    <node id="n55">
+      <data key="v_name">Taxa184</data>
+    </node>
+    <node id="n56">
+      <data key="v_name">Taxa185</data>
+    </node>
+    <node id="n57">
+      <data key="v_name">Taxa188</data>
+    </node>
+    <node id="n58">
+      <data key="v_name">Taxa190</data>
+    </node>
+    <node id="n59">
+      <data key="v_name">Taxa193</data>
+    </node>
+    <node id="n60">
+      <data key="v_name">Taxa197</data>
+    </node>
+    <node id="n61">
+      <data key="v_name">Taxa201</data>
+    </node>
+    <node id="n62">
+      <data key="v_name">Taxa202</data>
+    </node>
+    <node id="n63">
+      <data key="v_name">Taxa212</data>
+    </node>
+    <node id="n64">
+      <data key="v_name">Taxa217</data>
+    </node>
+    <node id="n65">
+      <data key="v_name">Taxa221</data>
+    </node>
+    <node id="n66">
+      <data key="v_name">Taxa231</data>
+    </node>
+    <node id="n67">
+      <data key="v_name">Taxa232</data>
+    </node>
+    <node id="n68">
+      <data key="v_name">Taxa234</data>
+    </node>
+    <node id="n69">
+      <data key="v_name">Taxa235</data>
+    </node>
+    <node id="n70">
+      <data key="v_name">Taxa239</data>
+    </node>
+    <node id="n71">
+      <data key="v_name">Taxa240</data>
+    </node>
+    <node id="n72">
+      <data key="v_name">Taxa249</data>
+    </node>
+    <node id="n73">
+      <data key="v_name">Taxa253</data>
+    </node>
+    <node id="n74">
+      <data key="v_name">Taxa254</data>
+    </node>
+    <node id="n75">
+      <data key="v_name">Taxa256</data>
+    </node>
+    <node id="n76">
+      <data key="v_name">Taxa260</data>
+    </node>
+    <node id="n77">
+      <data key="v_name">Taxa265</data>
+    </node>
+    <node id="n78">
+      <data key="v_name">Taxa266</data>
+    </node>
+    <node id="n79">
+      <data key="v_name">Taxa276</data>
+    </node>
+    <node id="n80">
+      <data key="v_name">Taxa281</data>
+    </node>
+    <node id="n81">
+      <data key="v_name">Taxa283</data>
+    </node>
+    <node id="n82">
+      <data key="v_name">Taxa284</data>
+    </node>
+    <node id="n83">
+      <data key="v_name">Taxa288</data>
+    </node>
+    <node id="n84">
+      <data key="v_name">Taxa292</data>
+    </node>
+    <node id="n85">
+      <data key="v_name">Taxa295</data>
+    </node>
+    <edge source="n2" target="n9">
+      <data key="e_weight">0.0191146931993117</data>
+    </edge>
+    <edge source="n13" target="n35">
+      <data key="e_weight">0.0246667463747117</data>
+    </edge>
+    <edge source="n16" target="n56">
+      <data key="e_weight">0.0451413606280172</data>
+    </edge>
+    <edge source="n28" target="n42">
+      <data key="e_weight">0.00810464958014678</data>
+    </edge>
+    <edge source="n28" target="n82">
+      <data key="e_weight">0.00445464068847368</data>
+    </edge>
+    <edge source="n42" target="n63">
+      <data key="e_weight">0.0040429671625547</data>
+    </edge>
+    <edge source="n57" target="n83">
+      <data key="e_weight">0.0184613275273176</data>
+    </edge>
+    <edge source="n61" target="n79">
+      <data key="e_weight">0.00685043891499115</data>
+    </edge>
+    <edge source="n70" target="n84">
+      <data key="e_weight">0.0358235100613676</data>
+    </edge>
+  </graph>
+</graphml>
