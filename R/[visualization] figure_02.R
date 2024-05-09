@@ -16,8 +16,8 @@ library(paletteer)
 
 # Fig. 2 A =============================================
 
-s0 = fread("emp-soil-analysis-clean-release1-v2/sample-metadata.Soil (non-saline).txt")
-x  = fread("emp-soil-analysis-clean-release1-v2/diversity1.csv")
+s0 = fread("emp-soil-analysis-clean-release1/sample-metadata.Soil (non-saline).txt")
+x  = fread("emp-soil-analysis-clean-release1/diversity1.csv")
 
 x = x[which(x$p.adj <= 0.05), ]
 
@@ -304,7 +304,10 @@ ggsave(
     width = 14, height = 12, units = "in"
 )
 
-
+ggsave(
+    plot = multi, filename = "Fig2.png", dpi = 600,
+    width = 14, height = 12, units = "in"
+)
 
 
 

@@ -458,6 +458,10 @@ ggsave(
     width = 14, height = 14, units = "in"
 )
 
+ggsave(
+    plot = multi, filename = "Fig4.png", dpi = 600,
+    width = 14, height = 14, units = "in"
+)
 
 # ggsave(
 #     plot = gr4, filename = "Fig4b.jpeg",

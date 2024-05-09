@@ -13,9 +13,9 @@ library(ggplot2)
 library(extrafont)
 library(rbiom)
 
-df = fread("emp-soil-analysis-clean-release1-v2/prevalence.csv")
+df = fread("emp-soil-analysis-clean-release1/prevalence.csv")
 
-s  = fread("emp-soil-analysis-clean-release1-v2/emp_qiime_mapping_qc_filtered.tsv")
+s  = fread("emp-soil-analysis-clean-release1/emp_qiime_mapping_qc_filtered.tsv")
 m  = read.biom(src = "data-raw/emp_deblur_90bp.qc_filtered.biom", tree = FALSE)
 
 s = s[which(empo_3 == "Soil (non-saline)")]
@@ -91,7 +91,7 @@ gr1 = ggplot(data = df, aes(x = `No. of Samples`, y = `No. of ESVs`)) +
 
 # Fig. 1 B =============================================
 
-df = fread("emp-soil-analysis-clean-release1-v2/ESV_distribution.csv")
+df = fread("emp-soil-analysis-clean-release1/ESV_distribution.csv")
 
 # s = fread("draft/Supplementary Table 1.csv")
 # 
@@ -173,7 +173,7 @@ library(raster)
 # library(rgeos)
 # library(sf)
 
-sample_metadata        <- "emp-soil-analysis-clean-release1-v2/sample-metadata.Soil (non-saline).txt"
+sample_metadata        <- "emp-soil-analysis-clean-release1/sample-metadata.Soil (non-saline).txt"
 climate_classification <- "Beck_KG_V1/Beck_KG_V1_present_0p5.tif"
 climate_info           <- "Beck_KG_V1/classification.txt"
 workdir                <- dirname(sample_metadata)
@@ -276,6 +276,11 @@ multi = (gr1 | gr2) / gr3 +
 
 ggsave(
     plot = multi, filename = "Fig1.pdf", device = cairo_pdf,
+    width = 12, height = 12, units = "in"
+)
+
+ggsave(
+    plot = multi, filename = "Fig1.png", dpi = 600,
     width = 12, height = 12, units = "in"
 )
 

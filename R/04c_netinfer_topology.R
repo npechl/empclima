@@ -14,8 +14,8 @@ library(igraph)
 
 # list of inputs ------------------------------------
 
-sample_map      <- "emp-soil-analysis-clean-release1-v2/sample-metadata.Soil (non-saline).txt"
-abundance_table <- "emp-soil-analysis-clean-release1-v2/abundance-table.Soil (non-saline).txt"
+sample_map      <- "emp-soil-analysis-clean-release1/sample-metadata.Soil (non-saline).txt"
+abundance_table <- "emp-soil-analysis-clean-release1/abundance-table.Soil (non-saline).txt"
 # graph_obj       <- "emp-soil-analysis-clean-sub5k"
 workdir         <- dirname(sample_map)
 
@@ -42,10 +42,25 @@ for(i in net_spieceasi_fls) {
     
     net_spieceasi <- read_graph(i, format = "graphml")
     
+    t = degree(
+        graph      = net_spieceasi,
+        mode       = c("all"),
+        loops      = FALSE,
+        normalized = TRUE
+    ) |> summary()
+    
     ve_counts[[zone]] = data.table(
         "No. of nodes" = vcount(net_spieceasi),
-        "No. of edges" = ecount(net_spieceasi)
+        "No. of edges" = ecount(net_spieceasi),
+        "Min. (degree)" = t[1] |> as.numeric(),
+        "1st Qu. (degree)" = t[2] |> as.numeric(),
+        "Median (degree)" = t[3] |> as.numeric(),
+        "Mean (degree)" = t[4] |> as.numeric(),
+        "3rd Qu. (degree)" = t[5] |> as.numeric(),
+        "Max. (degree)" = t[6] |> as.numeric()
     )
+    
+    
     
     net_degree <- degree(
         graph      = net_spieceasi,

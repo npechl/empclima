@@ -11,10 +11,10 @@ library(stringr)
 
 library(extrafont)
 
-a = fread("emp-soil-analysis-clean-release1-v2/links1.csv")
+a = fread("emp-soil-analysis-clean-release1/links1.csv")
 a = a[which(level == "Phylum")]
 
-b = fread("emp-soil-analysis-clean-release1-v2/hypergeometric1.csv")
+b = fread("emp-soil-analysis-clean-release1/hypergeometric1.csv")
 b = b[which(p.adj <= 0.05 & level == "Phylum"), ]
 
 cl = fread("draft/Supplementary Table 1.csv")
@@ -46,119 +46,199 @@ index = match(a$ClimateZone, cl$Code)
 
 a$Group = cl[index]$Group
 
-# 2023-11-23 circlize try ------------------------
-
-library(circlize)
-
-plot_circos <- function(x, zone) {
-    
-    chordDiagramFromDataFrame(
-        df = a0,
-        col = a0$col,
-        
-        grid.col = "grey10",
-        
-        annotationTrack = c("grid"),
-        annotationTrackHeight = c(0.01),
-        
-        preAllocateTracks = list(
-            track.height = .1
-        )
-    )
-    
-    circos.track(track.index = 1, panel.fun = function(x, y) {
-        
-        circos.text(
-            CELL_META$xcenter, CELL_META$ylim[1], CELL_META$sector.index, 
-            facing = "downward", niceFacing = TRUE, adj = c(0, 0.5),
-            cex = .8
-        )
-        
-    }, bg.border = NA)
-    
-    title(zone)
-    
-}
-
-
-par(mfrow = c(4, 5))
-
-
-for(i in unique(a$ClimateZone)) {
-    
-    x = a[which(ClimateZone == i)]
-    
-    a0 = x[, c("from", "to", "N"), with = FALSE]
-    
-    colnames(a0) = c("from", "to", "value")
-    
-    a0$col = ifelse(x$ann == "Sign. link", "red","grey")
-    
-    plot_circos(a0, i)
-    
-}
-
-
-circos.clear()
-
-
-# df = a[which(a$key %in% b$key), ]
 
 library(ggplot2)
 library(ggh4x)
-library(extrafont)
+library(ggtext)
 
-gr = ggplot() +
+a$from = a$from |> str_to_title()
+a$to = a$to |> str_to_title()
+
+# a$Group = paste0("**", a$Group, "**")
+
+a$from = a$from |> factor(levels = a$from |> str_sort(decreasing = FALSE) |> unique())
+a$to = a$to |> factor(levels = a$to |> str_sort(decreasing = TRUE) |> unique())
+
+gr = a |> 
+    ggplot(aes(from, to)) +
     
-    # geom_point(data = a, aes(x = from, y = to, size = Freq), size = .1, color = "grey10") +
-    
-    geom_point(data = a[which(ann != "Sign. link")], aes(x = from, y = to, size = Freq, fill = ann), 
-               color = "white", shape = 21, stroke = .25) +
-    
-    geom_point(data = a[which(ann == "Sign. link")], aes(x = from, y = to, size = Freq, fill = ann), 
-               color = "white", shape = 21, stroke = .25) +
-    
-    scale_fill_manual(
-        values = c(
-            "Sign. link" = "red3",
-            "Other"      = alpha("grey", alpha = 1)
-        ),
-        
-        guide = guide_legend(override.aes = list(size = 4, color = "black"))
+    geom_point(
+        aes(fill = ann, size = Freq),
+        shape = 21, stroke = .25, color = "grey96"
     ) +
     
-    # geom_point(data = df, aes(x = from, y = to, size = Freq),
-    #            shape = 21, fill = "#B60A1C", color = "white", stroke = .1) +
+    facet_nested_wrap(
+        vars(Group, ClimateZone), solo_line = TRUE,
+        ncol = 5, strip = strip_nested(
+            bleed = FALSE, 
+            by_layer_x = TRUE, 
+            text_x = list(element_text(face = "bold"), NULL)
+        ), nest_line = element_line(inherit.blank = TRUE)
+    ) +
     
     scale_size_continuous(
-        range = c(1.5, 7),
-        labels = scales::percent, 
-        guide = guide_legend(override.aes = list(color = "black"))
+        range = c(1.5, 5.5), labels = scales::percent,
+        guide = guide_legend(
+            title = "Frequency", 
+            override.aes = list(color = "grey10")
+        )
     ) +
     
-    facet_wrap2(vars(ClimateZone), ncol = 5) +
+    scale_fill_manual(
+        values = c("Other" = "grey", "Sign. link" = "#93003a"),
+        guide = guide_legend(
+            title = "Annotation", 
+            override.aes = list(size = 4)
+        )
+    ) +
     
     theme_minimal(base_family = "Calibri") +
     
     theme(
-        axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5),
+        legend.position = "bottom",
+        legend.justification = "left",
+        legend.title.position = "top",
+        
+        panel.grid.major = element_line(linewidth = .25),
+        panel.grid.minor = element_line(linewidth = .25, linetype = "dashed"),
+        
+        ggh4x.facet.nestline = element_line(color = "grey10", linewidth = .25),
+        
+        # strip.text = element_markdown(margin = margin(b = 5, t = 5), hjust = .5),
+        
+        axis.text.x = element_text(angle = 90, vjust = .5, hjust = 1, face = "italic"),
+        axis.text.y = element_text(face = "italic"),
+        
         axis.title = element_blank(),
         
-        panel.grid.minor = element_blank(),
-        panel.grid.major = element_line(linewidth = .25),
-        
-        strip.text = element_text(face = "bold"),
-        
-        # panel.border = element_rect(fill = NA),
-        
-        plot.margin = margin(10, 10, 10, 10)
+        plot.margin = margin(20, 20, 20, 20)
     )
 
 
 ggsave(
-    plot = gr, filename = "Fig3_v2.pdf", device = cairo_pdf,
-    width = 14, height = 12, units = "in"
+    plot = gr, "Fig3.png", dpi = 600,
+    width = 12, height = 12, units = "in"
 )
+
+ggsave(
+    plot = gr, "Fig3.pdf", device = cairo_pdf,
+    width = 12, height = 12, units = "in"
+)
+
+
+# 2023-11-23 circlize try ------------------------
+# 
+# library(circlize)
+# 
+# plot_circos <- function(x, zone) {
+#     
+#     chordDiagramFromDataFrame(
+#         df = a0,
+#         col = a0$col,
+#         
+#         grid.col = "grey10",
+#         
+#         annotationTrack = c("grid"),
+#         annotationTrackHeight = c(0.01),
+#         
+#         preAllocateTracks = list(
+#             track.height = .1
+#         )
+#     )
+#     
+#     circos.track(track.index = 1, panel.fun = function(x, y) {
+#         
+#         circos.text(
+#             CELL_META$xcenter, CELL_META$ylim[1], CELL_META$sector.index, 
+#             facing = "downward", niceFacing = TRUE, adj = c(0, 0.5),
+#             cex = .8
+#         )
+#         
+#     }, bg.border = NA)
+#     
+#     title(zone)
+#     
+# }
+# 
+# 
+# par(mfrow = c(4, 5))
+# 
+# 
+# for(i in unique(a$ClimateZone)) {
+#     
+#     x = a[which(ClimateZone == i)]
+#     
+#     a0 = x[, c("from", "to", "N"), with = FALSE]
+#     
+#     colnames(a0) = c("from", "to", "value")
+#     
+#     a0$col = ifelse(x$ann == "Sign. link", "red","grey")
+#     
+#     plot_circos(a0, i)
+#     
+# }
+# 
+# 
+# circos.clear()
+# 
+# 
+# # df = a[which(a$key %in% b$key), ]
+# 
+# library(ggplot2)
+# library(ggh4x)
+# library(extrafont)
+# 
+# gr = ggplot() +
+#     
+#     # geom_point(data = a, aes(x = from, y = to, size = Freq), size = .1, color = "grey10") +
+#     
+#     geom_point(data = a[which(ann != "Sign. link")], aes(x = from, y = to, size = Freq, fill = ann), 
+#                color = "white", shape = 21, stroke = .25) +
+#     
+#     geom_point(data = a[which(ann == "Sign. link")], aes(x = from, y = to, size = Freq, fill = ann), 
+#                color = "white", shape = 21, stroke = .25) +
+#     
+#     scale_fill_manual(
+#         values = c(
+#             "Sign. link" = "red3",
+#             "Other"      = alpha("grey", alpha = 1)
+#         ),
+#         
+#         guide = guide_legend(override.aes = list(size = 4, color = "black"))
+#     ) +
+#     
+#     # geom_point(data = df, aes(x = from, y = to, size = Freq),
+#     #            shape = 21, fill = "#B60A1C", color = "white", stroke = .1) +
+#     
+#     scale_size_continuous(
+#         range = c(1.5, 7),
+#         labels = scales::percent, 
+#         guide = guide_legend(override.aes = list(color = "black"))
+#     ) +
+#     
+#     facet_wrap2(vars(ClimateZone), ncol = 5) +
+#     
+#     theme_minimal(base_family = "Calibri") +
+#     
+#     theme(
+#         axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5),
+#         axis.title = element_blank(),
+#         
+#         panel.grid.minor = element_blank(),
+#         panel.grid.major = element_line(linewidth = .25),
+#         
+#         strip.text = element_text(face = "bold"),
+#         
+#         # panel.border = element_rect(fill = NA),
+#         
+#         plot.margin = margin(10, 10, 10, 10)
+#     )
+# 
+# 
+# ggsave(
+#     plot = gr, filename = "Fig3_v2.pdf", device = cairo_pdf,
+#     width = 14, height = 12, units = "in"
+# )
 
 # part 2 -----------------------------------
 
